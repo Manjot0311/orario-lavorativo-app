@@ -2658,6 +2658,273 @@ function renderMese() {
 
 
 /* ═══════════════════════════════════════════════════════════════
+   js/views/anno.js — Vista annuale
+   Modifica qui: griglia mesi, riepilogo FP annuale, statistiche anno
+   ═══════════════════════════════════════════════════════════════ */
+
+function renderAnno() {
+  const cfg  = getConfig(), std = t2m(cfg.std) || 480, data = loadData();
+  const now  = new Date(), isCY = vY === now.getFullYear();
+  const el   = document.getElementById('view-anno');
+
+  document.getElementById('header-subtitle').textContent = String(vY);
+
+  // ── Selezione anno ─────────────────────────────────────────
+  const years = new Set([2026]);
+  Object.keys(data).forEach(k => {
+    const y = parseInt(k);
+    if (y >= 2020 && y <= 2035) years.add(y);
+  });
+  const yearBtns = [...years].sort().map(y =>
+    `<button class="year-btn${y === vY ? ' active' : ''}" onclick="vY=${y};renderAnno()">${y}</button>`
+  ).join('');
+
+  // ── Statistiche annuali ────────────────────────────────────
+  let tO = 0, tG = 0, tS = 0, tD = 0;
+  for (let mo = 1; mo <= 12; mo++) {
+    for (let d = 1; d <= dim(vY, mo); d++) {
+      const r  = data[dk(vY, mo, d)];
+      if (!r || r.t !== 'Lavoro') continue;
+      const o  = oreG(r), dl = dltG(r, std);
+      if (o  != null) { tO += o; tG++; }
+      if (dl != null) { if (dl > 0) tS += dl; else tD += dl; }
+    }
+  }
+  const saldo = tS + tD;
+
+  const statCards = `
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Ore anno</div>
+        <div class="stat-value c-blue">${m2t(tO)}</div>
+        <div class="stat-sub">${tG} giorni lavorati</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Saldo netto</div>
+        <div class="stat-value ${saldo >= 0 ? 'c-green' : 'c-red'}">${m2t(saldo, true)}</div>
+        <div class="stat-sub">${m2t(tS, true)} str. totale</div>
+      </div>
+    </div>`;
+
+  // ── FP annuale ─────────────────────────────────────────────
+  const endMo = isCY ? now.getMonth() + 1 : 12;
+  const fp    = calcFP(vY, endMo, isCY);
+  const last  = fp.months[fp.months.length - 1];
+
+  let annualFpHtml = '';
+  if (last) {
+    const lbl    = isCY ? 'ad oggi' : 'fine anno';
+    const ferMat = fp.months.reduce((a, x) => a + x.fMat, 0);
+    const ferGod = fp.months.reduce((a, x) => a + x.fG,   0);
+    const perMat = fp.months.reduce((a, x) => a + x.pMat, 0);
+    const perGod = fp.months.reduce((a, x) => a + x.pG,   0);
+
+    annualFpHtml = `
+      <div class="annual-fp">
+        <div class="annual-fp-card fer">
+          <h4>Ferie — ${lbl}</h4>
+          <div class="annual-fp-row">
+            <span class="k">Maturato</span>
+            <span class="v c-amber">${hRound(ferMat).toFixed(2)}h &nbsp;(${(ferMat / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="annual-fp-row">
+            <span class="k">Goduto</span>
+            <span class="v c-red">${hRound(ferGod).toFixed(2)}h &nbsp;(${(ferGod / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="annual-fp-row">
+            <span class="k">Saldo</span>
+            <span class="v ${last.fS >= 0 ? 'c-amber' : 'c-red'}">
+              ${hRound(last.fS).toFixed(2)}h &nbsp;(${(last.fS / ORE_GIORNATA).toFixed(1)}g)
+            </span>
+          </div>
+        </div>
+        <div class="annual-fp-card per">
+          <h4>Permessi — ${lbl}</h4>
+          <div class="annual-fp-row">
+            <span class="k">Maturato</span>
+            <span class="v c-teal">${hRound(perMat).toFixed(2)}h &nbsp;(${(perMat / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="annual-fp-row">
+            <span class="k">Goduto</span>
+            <span class="v c-red">${hRound(perGod).toFixed(2)}h &nbsp;(${(perGod / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="annual-fp-row">
+            <span class="k">Saldo</span>
+            <span class="v ${last.pS >= 0 ? 'c-teal' : 'c-red'}">
+              ${hRound(last.pS).toFixed(2)}h &nbsp;(${(last.pS / ORE_GIORNATA).toFixed(1)}g)
+            </span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── Griglia mesi ───────────────────────────────────────────
+  const monthCards = [];
+  for (let mo = 1; mo <= 12; mo++) {
+    let mO = 0, g = 0, s = 0, dv = 0, mFerD = 0, mPermD = 0;
+    for (let d = 1; d <= dim(vY, mo); d++) {
+      const r = data[dk(vY, mo, d)];
+      if (!r) continue;
+      const o = oreG(r), dl = dltG(r, std);
+      if (r.t === 'Lavoro' && o != null) { mO += o; g++; if (dl > 0) s += dl; else if (dl < 0) dv += dl; }
+      if (r.t === 'Ferie')   mFerD++;
+      if (r.t === 'Permesso') mPermD++;
+    }
+    const pct      = g > 0 ? Math.min(100, Math.round(mO / (g * std) * 100)) : 0;
+    const barColor = pct >= 100 ? 'var(--green)' : pct >= 80 ? 'var(--amber)' : 'var(--red)';
+    const mSaldo   = s + dv;
+
+    let fpRow = '';
+    if (vY > 2026 || (vY === 2026 && mo >= 2)) {
+      const fpM = calcFP(vY, mo, false);
+      const lmx = fpM.months[fpM.months.length - 1];
+      if (lmx) {
+        fpRow = `
+          <div class="month-row">
+            <span class="k">Ferie saldo</span>
+            <span class="v ${lmx.fS >= 0 ? 'c-amber' : 'c-red'}">${hRound(lmx.fS).toFixed(1)}h (${(lmx.fS / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="month-row">
+            <span class="k">Perm. saldo</span>
+            <span class="v ${lmx.pS >= 0 ? 'c-teal' : 'c-red'}">${hRound(lmx.pS).toFixed(1)}h (${(lmx.pS / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>`;
+      }
+    }
+
+    monthCards.push(`
+      <div class="month-card" onclick="cM=${mo};cY=${vY};showView('mese')">
+        <h4>${MI[mo - 1]} <span>${g} gg lav.</span></h4>
+        <div class="month-row"><span class="k">Ore lavorate</span><span class="v">${m2t(mO)}</span></div>
+        <div class="month-row"><span class="k">Saldo ore</span><span class="v ${mSaldo >= 0 ? 'c-green' : 'c-red'}">${m2t(mSaldo, true)}</span></div>
+        ${mFerD  > 0 ? `<div class="month-row"><span class="k">Ferie</span><span class="v c-amber">${mFerD} gg</span></div>` : ''}
+        ${mPermD > 0 ? `<div class="month-row"><span class="k">Permessi</span><span class="v c-teal">${mPermD} gg</span></div>` : ''}
+        ${fpRow}
+        <div class="month-bar-track">
+          <div class="month-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+      </div>`);
+  }
+
+  // ── Render finale ──────────────────────────────────────────
+  el.innerHTML = `
+    <div class="year-selector">${yearBtns}</div>
+    ${statCards}
+    ${annualFpHtml}
+    <div class="section-label">Dettaglio mensile — tocca per aprire</div>
+    <div class="month-grid">${monthCards.join('')}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   js/views/ferie.js — Vista ferie & permessi
+   Modifica qui: storico mensile FP, saldo progressivo, riepilogo
+   ═══════════════════════════════════════════════════════════════ */
+
+function renderFerie() {
+  const el  = document.getElementById('view-ferie');
+  const now = new Date();
+
+  document.getElementById('header-subtitle').textContent = 'Ferie & Permessi';
+
+  // ── Nessun anchor disponibile ──────────────────────────────
+  if (!isOnboardingDone()) {
+    el.innerHTML = `
+      <div class="fp-empty">
+        <p>Completa la configurazione iniziale per vedere ferie e permessi.</p>
+        <button class="btn btn-primary" onclick="showOnboarding()">Configura</button>
+      </div>`;
+    return;
+  }
+
+  const anchor = getLastAnchor(now.getFullYear(), now.getMonth() + 1);
+  if (!anchor) {
+    el.innerHTML = `
+      <div class="fp-empty">
+        <p>Nessun saldo busta inserito. Aggiungi una busta paga per calcolare ferie e permessi.</p>
+        <button class="btn btn-primary" onclick="showOnboarding(true)">Aggiungi busta</button>
+      </div>`;
+    return;
+  }
+
+  // ── Calcolo FP fino ad oggi ────────────────────────────────
+  const toY   = now.getFullYear();
+  const toM   = now.getMonth() + 1;
+  const fp    = calcFP(toY, toM, true);
+  const last  = fp.months[fp.months.length - 1];
+
+  // ── Saldo attuale ──────────────────────────────────────────
+  let summaryHtml = '';
+  if (last) {
+    const lbl = last.partial
+      ? `ad oggi ${now.getDate()} ${MI_SHORT[toM - 1]}`
+      : 'fine mese';
+    summaryHtml = `
+      <div class="section-label">Saldo attuale</div>
+      <div class="fp-grid">
+        ${renderFPCard('fer', lbl, last.fAP, last.fMat, last.fG, last.fS)}
+        ${renderFPCard('per', lbl, last.pAP, last.pMat, last.pG, last.pS)}
+      </div>`;
+  } else {
+    summaryHtml = `
+      <div class="section-label">Saldo da busta paga</div>
+      <div class="fp-grid">
+        ${renderFPCard('fer', `busta ${MI_SHORT[anchor.m - 1]}`, 0, 0, 0, anchor.fer, true)}
+        ${renderFPCard('per', `busta ${MI_SHORT[anchor.m - 1]}`, 0, 0, 0, anchor.perm, true)}
+      </div>`;
+  }
+
+  // ── Storico mensile ────────────────────────────────────────
+  let storicoHtml = '';
+  if (fp.months.length > 0) {
+    const rows = [...fp.months].reverse().map(mo => {
+      const isPartial = mo.partial;
+      const lbl = isPartial
+        ? `ad oggi ${now.getDate()} ${MI_SHORT[mo.m - 1]}`
+        : MI_SHORT[mo.m - 1];
+      const fSColor = mo.fS >= 0 ? 'c-amber' : 'c-red';
+      const pSColor = mo.pS >= 0 ? 'c-teal'  : 'c-red';
+
+      return `
+        <div class="month-card">
+          <h4>${MI[mo.m - 1]} ${mo.y} <span>${lbl}</span></h4>
+          <div class="month-row">
+            <span class="k">🌤 Ferie maturate</span>
+            <span class="v c-amber">+${hRound(mo.fMat).toFixed(2)}h</span>
+          </div>
+          <div class="month-row">
+            <span class="k">🌤 Ferie godute</span>
+            <span class="v c-red">${mo.fG > 0 ? '−' : ''}${hRound(mo.fG).toFixed(2)}h</span>
+          </div>
+          <div class="month-row">
+            <span class="k">🌤 Saldo ferie</span>
+            <span class="v ${fSColor}">${hRound(mo.fS).toFixed(2)}h &nbsp;(${(mo.fS / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+          <div class="month-row">
+            <span class="k">🕐 Permessi maturati</span>
+            <span class="v c-teal">+${hRound(mo.pMat).toFixed(2)}h</span>
+          </div>
+          <div class="month-row">
+            <span class="k">🕐 Permessi goduti</span>
+            <span class="v c-red">${mo.pG > 0 ? '−' : ''}${hRound(mo.pG).toFixed(2)}h</span>
+          </div>
+          <div class="month-row">
+            <span class="k">🕐 Saldo permessi</span>
+            <span class="v ${pSColor}">${hRound(mo.pS).toFixed(2)}h &nbsp;(${(mo.pS / ORE_GIORNATA).toFixed(1)}g)</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    storicoHtml = `
+      <div class="section-label">Storico mensile</div>
+      <div class="month-grid">${rows}</div>`;
+  }
+
+  // ── Render finale ──────────────────────────────────────────
+  el.innerHTML = `
+    ${summaryHtml}
+    ${storicoHtml}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    js/views/settings.js — Vista impostazioni
    ═══════════════════════════════════════════════════════════════ */
 
