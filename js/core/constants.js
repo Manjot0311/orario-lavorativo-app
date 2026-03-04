@@ -1,7 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   js/core/constants.js — Costanti globali: locale e contratto
-   Modifica qui: nomi mesi/giorni, ore contratto, saldo iniziale
+   js/core/constants.js — Costanti globali: locale
+   I valori di contratto ora vengono dal profilo utente (onboarding).
    ═══════════════════════════════════════════════════════════════ */
+
+// ─── VERSIONE APP ─────────────────────────────────────────────
+const APP_VERSION = '1.1.0';
 
 // ─── LOCALE ───────────────────────────────────────────────────
 const DI       = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
@@ -10,15 +13,33 @@ const MI       = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
                   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MI_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 
-// ─── CONTRATTO ────────────────────────────────────────────────
-// Maturazione mensile da busta paga (160h/anno = 20gg ferie, 88h/anno = 11gg permessi)
-const FER_MESE  = 13.33333;  // ore ferie maturate per mese
-const PERM_MESE =  7.33333;  // ore permessi maturati per mese
-const ORE_GIORNATA = 8;      // ore per giornata intera contrattuale
+// ─── CONTRATTO (fallback se profilo non configurato) ──────────
+// Questi valori vengono sovrascritti dinamicamente da getUserContract()
+const ORE_GIORNATA = 8;
 
-// ─── SALDO INIZIALE ───────────────────────────────────────────
-// Punto di partenza: busta paga Febbraio 2026, riferita a Gennaio 2026
-// Ferie:    Res.AP -2.16667  + Mat 13.33333  − God 16.00000  = -4.83334
-// Permessi: Res.AP 188.83333 + Mat  7.33333  − God  1.50000  = 194.66666
-const FER_SALDO_GEN26  =  -4.83334;
-const PERM_SALDO_GEN26 = 194.66666;
+// ─── HELPERS PROFILO ──────────────────────────────────────────
+/** Restituisce i parametri contrattuali dal profilo utente */
+function getUserContract() {
+  const p = loadUserProfile();
+  return {
+    oreStd:   p.oreStd   || 8,
+    ferMese:  p.ferMese  || 13.33333,
+    permMese: p.permMese || 7.33333,
+  };
+}
+
+/**
+ * Trova l'anchor più recente (busta paga) precedente o uguale a (toY, toM).
+ * Ritorna { data, fer, perm, y, m } oppure null.
+ */
+function getLastAnchor(toY, toM) {
+  const p = loadUserProfile();
+  const buste = (p.bustePagate || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  for (const b of buste) {
+    const [by, bm] = b.data.split('-').map(Number);
+    if (by < toY || (by === toY && bm <= toM)) {
+      return { ...b, y: by, m: bm };
+    }
+  }
+  return null;
+}

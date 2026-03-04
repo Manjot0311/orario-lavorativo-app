@@ -1,22 +1,60 @@
 /* ═══════════════════════════════════════════════════════════════
    js/views/settings.js — Vista impostazioni
-   Modifica qui: aggiungi nuove opzioni di configurazione, export/import
    ═══════════════════════════════════════════════════════════════ */
 
 function renderSettings() {
-  const cfg = getConfig();
-  const el  = document.getElementById('view-settings');
+  const cfg     = getConfig();
+  const profile = loadUserProfile();
+  const el      = document.getElementById('view-settings');
 
   document.getElementById('header-subtitle').textContent = 'Impostazioni';
 
+  const anchor = getLastAnchor(9999, 12);
+  const [ay, am] = anchor ? anchor.data.split('-').map(Number) : [null, null];
+  const anchorLabel = anchor
+    ? `Busta di ${MI[am-1]} ${ay} — ferie ${anchor.fer?.toFixed(2)}h, permessi ${anchor.perm?.toFixed(2)}h`
+    : 'Nessuna busta inserita';
+
   el.innerHTML = `
     <div class="settings-section">
-      <div class="settings-section-title">Contratto</div>
+      <div class="settings-section-title">Profilo contratto</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Ore standard / giorno</div>
+            <div class="desc">${profile.oreStd || 8}h contrattuali</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showOnboarding(true)">Modifica</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Maturazione mensile</div>
+            <div class="desc">Ferie ${profile.ferMese?.toFixed(2) || '—'}h · Permessi ${profile.permMese?.toFixed(2) || '—'}h</div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Ultimo saldo busta</div>
+            <div class="desc">${anchorLabel}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="_obStep=2;_renderOnboarding(true)">Aggiorna</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Busta paga ogni mese il</div>
+            <div class="desc">giorno ${profile.bustaGiorno || '—'}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Orario</div>
       <div class="settings-card">
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="label">Ore standard giornaliere</div>
-            <div class="desc">Ore contrattuali per giornata intera</div>
+            <div class="desc">Usato per calcolo scostamento</div>
           </div>
           <input type="time" id="cfg-std" class="time-input"
             value="${cfg.std}" onchange="saveConfig(); renderAll()">
@@ -51,7 +89,7 @@ function renderSettings() {
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="label">Elimina tutti i dati</div>
-            <div class="desc">Azione irreversibile — non recuperabile</div>
+            <div class="desc">Cancella tutto e riparte dall'onboarding</div>
           </div>
           <button class="btn btn-danger btn-sm" onclick="clearAll()">Elimina</button>
         </div>
@@ -59,6 +97,6 @@ function renderSettings() {
     </div>
 
     <div class="settings-footer">
-      presenze · dati salvati localmente sul dispositivo
+      presenze · v${APP_VERSION} · dati salvati localmente sul dispositivo
     </div>`;
 }

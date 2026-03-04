@@ -1,18 +1,21 @@
 /* ═══════════════════════════════════════════════════════════════
    js/views/mese.js — Vista mensile
-   Modifica qui: layout mese, quick bar, righe giorno, pannello FP
    ═══════════════════════════════════════════════════════════════ */
 
 function renderMese() {
-  const cfg = getConfig(), std = t2m(cfg.std) || 480, data = loadData();
-  const now  = new Date();
+  const cfg      = getConfig();
+  const contract = getUserContract();
+  const std      = t2m(cfg.std) || (contract.oreStd * 60);
+  const data     = loadData();
+  const now      = new Date();
   const todayKey = dk(now.getFullYear(), now.getMonth() + 1, now.getDate());
   const isNow    = cY === now.getFullYear() && cM === now.getMonth() + 1;
   const el       = document.getElementById('view-mese');
 
+  // Header subtitle: solo mese e anno (non ripete "Presenze")
   document.getElementById('header-subtitle').textContent = `${MI[cM - 1]} ${cY}`;
 
-  // ── Calcolo statistiche mensili ────────────────────────────
+  // ── Statistiche mensili ────────────────────────────────────
   let totO = 0, ggL = 0, str = 0, deb = 0, ferD = 0, malD = 0, permD = 0;
   for (let d = 1; d <= dim(cY, cM); d++) {
     const r = data[dk(cY, cM, d)];
@@ -33,9 +36,9 @@ function renderMese() {
     <div class="stat-card" style="grid-column:1/-1">
       <div class="stat-label">Assenze questo mese</div>
       <div style="display:flex;gap:16px;margin-top:4px">
-        ${ferD  > 0 ? `<div><span class="stat-value c-amber" style="font-size:.95rem">${ferD}</span>  <span class="stat-sub">ferie</span></div>` : ''}
+        ${ferD  > 0 ? `<div><span class="stat-value c-amber" style="font-size:.95rem">${ferD}</span> <span class="stat-sub">ferie</span></div>` : ''}
         ${permD > 0 ? `<div><span class="stat-value c-teal"  style="font-size:.95rem">${permD}</span> <span class="stat-sub">permesso</span></div>` : ''}
-        ${malD  > 0 ? `<div><span class="stat-value c-red"   style="font-size:.95rem">${malD}</span>  <span class="stat-sub">malattia</span></div>` : ''}
+        ${malD  > 0 ? `<div><span class="stat-value c-red"   style="font-size:.95rem">${malD}</span> <span class="stat-sub">malattia</span></div>` : ''}
       </div>
     </div>` : '';
 
@@ -56,13 +59,8 @@ function renderMese() {
 
   // ── FP Panel ───────────────────────────────────────────────
   let fpHtml = '';
-  if (cY === 2026 && cM === 1) {
-    const j = getFPJan2026();
-    fpHtml = `<div class="fp-grid">
-      ${renderFPCard('fer', 'busta paga Gen', j.fer.ap, j.fer.mat, j.fer.god, j.fer.saldo, true)}
-      ${renderFPCard('per', 'busta paga Gen', j.per.ap, j.per.mat, j.per.god, j.per.saldo, true)}
-    </div>`;
-  } else if (cY > 2026 || (cY === 2026 && cM >= 2)) {
+  const anchor = getLastAnchor(cY, cM);
+  if (anchor) {
     const fp  = calcFP(cY, cM, isNow);
     const cur = fp.months[fp.months.length - 1];
     if (cur) {
@@ -73,20 +71,40 @@ function renderMese() {
         ${renderFPCard('fer', lbl, cur.fAP, cur.fMat, cur.fG, cur.fS)}
         ${renderFPCard('per', lbl, cur.pAP, cur.pMat, cur.pG, cur.pS)}
       </div>`;
+    } else if (fp.months.length === 0) {
+      // Mese uguale o precedente all'anchor — mostra saldo anchor
+      fpHtml = `<div class="fp-grid">
+        ${renderFPCard('fer', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.fer, true)}
+        ${renderFPCard('per', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.perm, true)}
+      </div>`;
     }
+  } else if (isOnboardingDone()) {
+    fpHtml = `<div class="fp-empty">
+      <p>Nessun saldo busta inserito per questo periodo.</p>
+    </div>`;
   }
 
   // ── Quick bar (solo mese corrente) ─────────────────────────
+  // I valori di default vengono dall'orario standard configurato
+  const defE  = '08:45';
+  const defUP = '13:00';
+  const defRP = '13:30';
+  // Uscita di default calcolata: entrata + ore std + pausa pranzo 30min
+  const stdMin   = contract.oreStd * 60;
+  const pausaMin = 30;
+  const uscitaM  = t2m(defE) + stdMin + pausaMin;
+  const defU     = m2t(uscitaM).replace('+','');
+
   const qbarHtml = isNow ? `
     <div class="quick-bar">
       <div class="quick-bar-label">
         Inserimento rapido — ${DI[now.getDay()]}, ${now.getDate()} ${MI[now.getMonth()]} ${now.getFullYear()}
       </div>
       <div class="quick-inputs">
-        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e" value="08:45"></div>
-        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="13:00"></div>
-        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="13:30"></div>
-        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u" value="17:30"></div>
+        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e" value="${defE}"></div>
+        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="${defUP}"></div>
+        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="${defRP}"></div>
+        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u" value="${defU}"></div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="quickSave()">Salva oggi</button>
     </div>` : '';
@@ -113,17 +131,17 @@ function renderMese() {
       const isToday = dk(y, m, d) === todayKey;
       const tipo    = we ? 'Weekend' : (r?.t || '');
 
-      const badgeMap  = { Lavoro:'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
-                          Malattia:'badge-malattia', Permesso:'badge-permesso' };
-      const badgeCls  = badgeMap[tipo] || '';
+      const badgeMap = { Lavoro:'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
+                         Malattia:'badge-malattia', Permesso:'badge-permesso' };
+      const badgeCls = badgeMap[tipo] || '';
 
       const rowClass = [
         'day-row',
-        we      ? 'weekend'      : '',
-        isToday ? 'today'        : '',
-        om      ? 'other-month'  : '',
-        r?.t === 'Ferie'    ? 'ferie-row'   : '',
-        r?.t === 'Permesso' ? 'permesso-row': ''
+        we      ? 'weekend'       : '',
+        isToday ? 'today'         : '',
+        om      ? 'other-month'   : '',
+        r?.t === 'Ferie'    ? 'ferie-row'    : '',
+        r?.t === 'Permesso' ? 'permesso-row' : ''
       ].filter(Boolean).join(' ');
 
       const dateLabel = om
@@ -149,7 +167,7 @@ function renderMese() {
           <div class="day-date">${dateLabel}</div>
           <div>${tipo && !we ? `<span class="badge ${badgeCls}">${tipo}</span>` : ''}</div>
           <div class="day-center">
-            ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · ' + absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
+            ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · '+absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
             ${noteStr  ? `<div class="day-note">${noteStr}</div>` : ''}
           </div>
           <div class="day-right">
@@ -175,7 +193,6 @@ function renderMese() {
       </div>`;
   }).join('');
 
-  // ── Render finale ──────────────────────────────────────────
   el.innerHTML = `
     <div class="month-nav">
       <button class="nav-btn" onclick="chMonth(-1)">${Icons.chevronLeft()}</button>

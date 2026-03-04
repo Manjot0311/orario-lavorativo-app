@@ -1,21 +1,36 @@
 /* ═══════════════════════════════════════════════════════════════
    js/app.js — Controller principale
-   Modifica qui: stato globale, navigazione, export/import, toast
    ═══════════════════════════════════════════════════════════════ */
 
-// ─── STATO GLOBALE ────────────────────────────────────────────
-let cY, cM;       // mese/anno visualizzati nella vista Mese
-let vY;           // anno visualizzato nella vista Anno
-let eKey = null;  // chiave giorno in modifica (YYYY-MM-DD)
+let cY, cM;
+let vY;
+let eKey = null;
 
 // ─── INIT ─────────────────────────────────────────────────────
 function init() {
+  const { migrated, fromVersion } = migrateIfNeeded();
   initData();
+
   const now = new Date();
   cY = now.getFullYear();
   cM = now.getMonth() + 1;
   vY = cY;
+
+  // Onboarding al primo avvio
+  if (!isOnboardingDone()) {
+    renderAll();
+    setTimeout(() => showOnboarding(false), 150);
+    return;
+  }
+
   renderAll();
+
+  if (migrated) {
+    setTimeout(() => showToast(`Dati migrati — tutto ok ✓`, 'success'), 600);
+  }
+
+  // Controlla reminder busta paga
+  setTimeout(checkBustaReminder, 800);
 }
 
 function renderAll() {
@@ -66,7 +81,7 @@ function quickSave() {
   };
   saveData(data);
   cY = now.getFullYear(); cM = now.getMonth() + 1;
-  renderAll();
+  renderAll(); // questo fa re-render della quickbar con i default
   showToast('Giornata salvata', 'success');
 }
 
@@ -94,15 +109,10 @@ function exportCSV() {
 }
 
 // ─── EXPORT XLSX ──────────────────────────────────────────────
-// xlsx.min.js opzionale: scarica da https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
-// e mettilo in js/xlsx.min.js. Se assente, il tasto usa exportCSV come fallback.
 function exportXLSX() {
-  if (typeof XLSX === 'undefined') {
-    showToast('xlsx.min.js non presente — esporto CSV', '');
-    exportCSV();
-    return;
-  }
+  if (typeof XLSX === 'undefined') { exportCSV(); return; }
   const data = loadData(), cfg = getConfig(), std = t2m(cfg.std) || 480;
+  const contract = getUserContract();
   const rows = [['Data','Giorno','Tipo','Entrata','Usc.Pranzo','Rient.Pranzo','Uscita',
     'Ore Totali','Scostamento','Ore Permesso','Ore Ferie Parz.','Note']];
   Object.keys(data).sort().forEach(k => {
@@ -113,22 +123,11 @@ function exportXLSX() {
       dl != null ? m2t(dl, true): '',
       r.po||'', r.fo||'', r.n||'']);
   });
-  const fpRows = [['RIEPILOGO FERIE & PERMESSI'],
-    ['Mese','Res.AP Fer','Mat.Fer','God.Fer','Saldo Fer (h)','Saldo Fer (g)',
-     'Res.AP Per','Mat.Per','God.Per','Saldo Per (h)','Saldo Per (g)']];
-  calcFP(2026, 12, false).months.forEach(x =>
-    fpRows.push([`${MI[x.m-1]} ${x.y}`,
-      hRound(x.fAP).toFixed(2), hRound(x.fMat).toFixed(2), hRound(x.fG).toFixed(2),
-      hRound(x.fS).toFixed(2),  (x.fS  / ORE_GIORNATA).toFixed(2),
-      hRound(x.pAP).toFixed(2), hRound(x.pMat).toFixed(2), hRound(x.pG).toFixed(2),
-      hRound(x.pS).toFixed(2),  (x.pS  / ORE_GIORNATA).toFixed(2)])
-  );
   const wb  = XLSX.utils.book_new();
   const ws1 = XLSX.utils.aoa_to_sheet(rows);
   ws1['!cols'] = [{wch:12},{wch:11},{wch:10},{wch:8},{wch:12},{wch:14},
                   {wch:8},{wch:10},{wch:12},{wch:10},{wch:14},{wch:35}];
   XLSX.utils.book_append_sheet(wb, ws1, 'Presenze');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fpRows), 'Ferie & Permessi');
   XLSX.writeFile(wb, 'presenze.xlsx');
   showToast('Excel esportato', 'success');
 }
@@ -136,7 +135,7 @@ function exportXLSX() {
 // ─── IMPORT XLSX ──────────────────────────────────────────────
 function importXLSX(ev) {
   if (typeof XLSX === 'undefined') {
-    showToast('xlsx.min.js non presente — import non disponibile', 'error');
+    showToast('xlsx.min.js non presente', 'error');
     ev.target.value = '';
     return;
   }
@@ -170,6 +169,15 @@ function importXLSX(ev) {
   };
   reader.readAsArrayBuffer(file);
   ev.target.value = '';
+}
+
+// ─── UPDATE BANNER ────────────────────────────────────────────
+function showUpdateBanner(version) {
+  const banner = document.getElementById('update-banner');
+  if (!banner) return;
+  banner.querySelector('.ub-text').innerHTML =
+    `<strong>Versione ${version} disponibile</strong> — ricarica per aggiornare l'app.`;
+  banner.classList.add('visible');
 }
 
 // ─── TOAST ────────────────────────────────────────────────────

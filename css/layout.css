@@ -14,17 +14,20 @@
 
 /* ─── HEADER ─────────────────────────────────────────────────── */
 #header {
-  height: var(--header-height);
+  min-height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--page-pad);
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
   border-bottom: 1px solid var(--border-soft);
   background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 50;
+  /* Evita sovrapposizione testo su safe area iPhone */
+  box-sizing: content-box;
+  height: var(--header-height);
 }
 
 .header-left {

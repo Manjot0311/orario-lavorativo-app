@@ -1270,6 +1270,105 @@ a {
   cursor: pointer;
 }
 
+
+/* ─── ONBOARDING OVERLAY ─────────────────────────────────────── */
+#onboarding-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 300;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+#onboarding-overlay.open {
+  display: flex;
+  animation: overlayIn 0.2s ease;
+}
+.ob-sheet {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 640px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 20px 20px calc(24px + var(--safe-bottom));
+  animation: sheetUp 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+.ob-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--border); margin: 0 auto 20px;
+}
+.ob-progress {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
+}
+.ob-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); transition: background 0.2s;
+}
+.ob-dot.active { background: var(--accent); width: 20px; border-radius: 3px; }
+.ob-icon { font-size: 2rem; text-align: center; margin-bottom: 10px; }
+.ob-title {
+  font-size: 1.2rem; font-weight: 700; text-align: center;
+  margin-bottom: 6px; font-family: var(--font-serif); font-style: italic;
+}
+.ob-desc {
+  font-size: 0.84rem; color: var(--text-secondary);
+  text-align: center; margin-bottom: 20px; line-height: 1.6;
+}
+.ob-fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.ob-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ob-next-btn { margin-top: 4px; }
+.ob-recap {
+  background: var(--surface-2); border-radius: 10px;
+  padding: 14px; margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--border-soft);
+}
+.ob-recap-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border-soft);
+  font-size: 0.84rem;
+}
+.ob-recap-row:last-child { border: none; }
+.ob-recap-row span { color: var(--text-secondary); }
+.ob-recap-row strong { font-family: var(--font-mono); font-size: 0.82rem; }
+.fp-empty {
+  background: var(--surface-2); border-radius: 10px; padding: 16px;
+  text-align: center; color: var(--text-tertiary); font-size: 0.82rem;
+  margin-bottom: 16px; border: 1px solid var(--border-soft);
+}
+
+/* ─── BUSTA REMINDER BANNER ──────────────────────────────────── */
+#busta-reminder {
+  display: none;
+  position: fixed;
+  top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 8px);
+  left: 50%; transform: translateX(-50%);
+  max-width: 580px; width: calc(100% - 32px);
+  background: color-mix(in srgb, var(--amber) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  border-radius: 12px; padding: 12px 16px;
+  align-items: center; justify-content: space-between; gap: 12px;
+  z-index: 80; animation: fadeIn 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+#busta-reminder.visible { display: flex; }
+#busta-reminder .br-text { font-size: 0.82rem; color: var(--text-primary); flex: 1; }
+#busta-reminder .br-text strong { color: var(--amber); }
+#busta-reminder .br-actions { display: flex; gap: 8px; flex-shrink: 0; }
+#busta-reminder .br-update {
+  background: var(--amber); color: #fff; border: none;
+  border-radius: 7px; padding: 6px 14px; font-size: 0.78rem;
+  font-weight: 600; cursor: pointer;
+}
+#busta-reminder .br-dismiss {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-secondary); border-radius: 7px;
+  padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
+}
+
   </style>
 </head>
 <body>
@@ -1346,6 +1445,25 @@ a {
         <span>Config</span>
       </button>
     </nav>
+
+
+  <!-- ── ONBOARDING ────────────────────────────────────────── -->
+  <div id="onboarding-overlay">
+    <div class="ob-sheet">
+      <div class="ob-handle"></div>
+      <div id="ob-progress" class="ob-progress"></div>
+      <div id="ob-body"></div>
+    </div>
+  </div>
+
+  <!-- ── BUSTA REMINDER ────────────────────────────────────── -->
+  <div id="busta-reminder">
+    <div class="br-text"></div>
+    <div class="br-actions">
+      <button class="br-update" onclick="openBustaUpdate()">Aggiorna</button>
+      <button class="br-dismiss" onclick="dismissBustaReminder()">✕</button>
+    </div>
+  </div>
 
   </div><!-- /#app -->
 
@@ -1479,7 +1597,6 @@ function hRound(h) {
   return Math.round(h * 100) / 100;
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    js/utils/date.js — Funzioni di utilità per le date
    Modifica qui: logica settimane ISO, calcolo giorni nel mese
@@ -1554,339 +1671,6 @@ function weeksForMonth(y, m) {
     .map(([, v]) => v);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════
-   js/core/constants.js — Costanti globali: locale e contratto
-   Modifica qui: nomi mesi/giorni, ore contratto, saldo iniziale
-   ═══════════════════════════════════════════════════════════════ */
-
-// ─── VERSIONE APP ─────────────────────────────────────────────
-// Deve corrispondere a APP_VERSION in sw.js
-const APP_VERSION = '1.0.0';
-const DI       = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-const DI_SHORT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-const MI       = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-                  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-const MI_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-
-// ─── CONTRATTO ────────────────────────────────────────────────
-// Maturazione mensile da busta paga (160h/anno = 20gg ferie, 88h/anno = 11gg permessi)
-const FER_MESE  = 13.33333;  // ore ferie maturate per mese
-const PERM_MESE =  7.33333;  // ore permessi maturati per mese
-const ORE_GIORNATA = 8;      // ore per giornata intera contrattuale
-
-// ─── SALDO INIZIALE ───────────────────────────────────────────
-// Punto di partenza: busta paga Febbraio 2026, riferita a Gennaio 2026
-// Ferie:    Res.AP -2.16667  + Mat 13.33333  − God 16.00000  = -4.83334
-// Permessi: Res.AP 188.83333 + Mat  7.33333  − God  1.50000  = 194.66666
-const FER_SALDO_GEN26  =  -4.83334;
-const PERM_SALDO_GEN26 = 194.66666;
-
-
-/* ═══════════════════════════════════════════════════════════════
-   js/core/storage.js — Accesso al localStorage
-   • Migrazione automatica tra versioni delle chiavi storage
-   • Merge dei SEED senza sovrascrivere i dati utente
-   • Backup automatico prima di ogni migrazione
-   ═══════════════════════════════════════════════════════════════ */
-
-// ─── VERSIONE CORRENTE ────────────────────────────────────────
-// Incrementa DATA_VERSION ogni volta che cambi struttura o SEED.
-// La migrazione avviene automaticamente al prossimo avvio.
-const DATA_VERSION = 5;
-
-// ─── CHIAVI STORAGE ───────────────────────────────────────────
-const SK      = `pres_v${DATA_VERSION}`;    // presenze
-const CK      = `cfg_v${DATA_VERSION}`;     // configurazione
-const VK      = 'presenze_data_version';    // numero versione salvata
-const BK_PRE  = 'presenze_backup_v';        // prefisso backup (es. presenze_backup_v4)
-
-// ─── CHIAVI DELLE VERSIONI PRECEDENTI ─────────────────────────
-// Aggiungi qui le chiavi delle versioni passate in ordine decrescente.
-// Servono per trovare i dati dell'utente quando si migra.
-const OLD_KEYS = [
-  { sk: 'pres_v4', ck: 'cfg_v4', v: 4 },
-  { sk: 'pres_v3', ck: 'cfg_v3', v: 3 },
-  { sk: 'pres_v2', ck: 'cfg_v2', v: 2 },
-  { sk: 'pres_v1', ck: 'cfg_v1', v: 1 },
-];
-
-// ─── FUNZIONI STORAGE BASE ────────────────────────────────────
-function loadData()   { try { return JSON.parse(localStorage.getItem(SK))  || {}; } catch { return {}; } }
-function saveData(d)  { localStorage.setItem(SK, JSON.stringify(d)); }
-function loadConfig() { try { return JSON.parse(localStorage.getItem(CK)) || {}; } catch { return {}; } }
-function getConfig()  { return { std: loadConfig().std || '08:00' }; }
-
-function saveConfig() {
-  const el  = document.getElementById('cfg-std');
-  const val = (el && el.value) ? el.value : '08:00';
-  localStorage.setItem(CK, JSON.stringify({ std: val }));
-}
-
-// ─── BACKUP ───────────────────────────────────────────────────
-/** Salva una copia di sicurezza dei dati prima di una migrazione */
-function backupData(fromVersion, data, config) {
-  const bk = {
-    timestamp: new Date().toISOString(),
-    fromVersion,
-    data,
-    config,
-  };
-  try {
-    localStorage.setItem(BK_PRE + fromVersion, JSON.stringify(bk));
-  } catch (e) {
-    // localStorage pieno: ignora silenziosamente il backup
-    console.warn('Backup pre-migrazione non riuscito (localStorage pieno?):', e);
-  }
-}
-
-/** Restituisce il backup di una versione (o null) */
-function loadBackup(version) {
-  try {
-    return JSON.parse(localStorage.getItem(BK_PRE + version)) || null;
-  } catch { return null; }
-}
-
-// ─── MIGRAZIONE ───────────────────────────────────────────────
-/**
- * Cerca dati in chiavi vecchie, fa il backup, li migra nella chiave corrente.
- * Ritorna { migrated: bool, fromVersion: number|null }
- */
-function migrateIfNeeded() {
-  const savedVersion = parseInt(localStorage.getItem(VK) || '0', 10);
-
-  // Già alla versione corrente: niente da fare
-  if (savedVersion === DATA_VERSION && localStorage.getItem(SK)) {
-    return { migrated: false, fromVersion: null };
-  }
-
-  // Cerca dati nelle chiavi vecchie (dal più recente al più antico)
-  for (const old of OLD_KEYS) {
-    const raw = localStorage.getItem(old.sk);
-    if (!raw) continue;
-
-    let oldData = {};
-    try { oldData = JSON.parse(raw) || {}; } catch { continue; }
-    const oldConfig = (() => { try { return JSON.parse(localStorage.getItem(old.ck)) || {}; } catch { return {}; } })();
-
-    // Backup prima di migrare
-    backupData(old.v, oldData, oldConfig);
-
-    // Copia dati → nuova chiave (solo se la nuova chiave è vuota o ha solo SEED)
-    const existing = loadData();
-    const merged   = { ...oldData, ...existing }; // i dati utente già presenti vincono
-    saveData(merged);
-
-    // Copia config → nuova chiave
-    if (!localStorage.getItem(CK) && oldConfig.std) {
-      localStorage.setItem(CK, JSON.stringify({ std: oldConfig.std }));
-    }
-
-    // Segna versione corrente
-    localStorage.setItem(VK, String(DATA_VERSION));
-
-    console.info(`[Presenze] Migrazione v${old.v} → v${DATA_VERSION} completata.`);
-    return { migrated: true, fromVersion: old.v };
-  }
-
-  // Nessun dato precedente trovato: primo avvio
-  localStorage.setItem(VK, String(DATA_VERSION));
-  return { migrated: false, fromVersion: null };
-}
-
-// ─── SEED DATA ────────────────────────────────────────────────
-// Dati storici caricati al primo avvio (importati dall'Excel originale).
-// Le chiavi presenti nel SEED ma assenti nei dati utente vengono aggiunte.
-// Le chiavi già presenti nei dati utente NON vengono mai sovrascritte.
-const SEED = {
-  "2026-01-01":{"t":"Festivo","n":"Azienda Chiusa"},
-  "2026-01-02":{"t":"Ferie","n":"Azienda Chiusa"},
-  "2026-01-05":{"t":"Ferie","n":"Azienda Chiusa"},
-  "2026-01-06":{"t":"Festivo","n":"Azienda Chiusa"},
-  "2026-01-07":{"t":"Lavoro","e":"08:50","up":"13:00","rp":"13:30","u":"18:11"},
-  "2026-01-08":{"t":"Lavoro","e":"08:47","up":"13:19","rp":"13:50","u":"18:20"},
-  "2026-01-09":{"t":"Lavoro","e":"08:51","up":"13:22","rp":"13:52","u":"18:10"},
-  "2026-01-12":{"t":"Lavoro","e":"08:56","up":"13:28","rp":"14:08","u":"18:05"},
-  "2026-01-13":{"t":"Lavoro","e":"08:45","up":"13:16","rp":"13:50","u":"17:42"},
-  "2026-01-14":{"t":"Lavoro","e":"08:44","up":"13:18","rp":"13:58","u":"16:55","n":"Permesso 30m per Vladi Impresa","po":0.5},
-  "2026-01-15":{"t":"Lavoro","e":"08:44","up":"13:03","rp":"13:33","u":"17:45"},
-  "2026-01-16":{"t":"Lavoro","e":"08:45","up":"13:15","rp":"14:00","u":"17:31"},
-  "2026-01-19":{"t":"Lavoro","e":"08:45","up":"13:00","rp":"13:46","u":"17:32"},
-  "2026-01-20":{"t":"Lavoro","e":"08:50","up":"13:38","rp":"14:18","u":"17:31"},
-  "2026-01-21":{"t":"Lavoro","e":"08:42","up":"13:06","rp":"13:36","u":"17:45"},
-  "2026-01-22":{"t":"Lavoro","e":"08:47","up":"13:53","rp":"14:23","u":"17:46"},
-  "2026-01-23":{"t":"Lavoro","e":"08:47","up":"13:19","rp":"13:49","u":"17:50"},
-  "2026-01-26":{"t":"Lavoro","e":"08:47","up":"13:14","rp":"14:00","u":"17:40"},
-  "2026-01-27":{"t":"Lavoro","e":"08:38","up":"13:12","rp":"13:50","u":"17:40"},
-  "2026-01-28":{"t":"Lavoro","e":"08:43","up":"13:00","rp":"13:01","u":"15:45","n":"Permesso 1h, Mannu India","po":1.0},
-  "2026-01-29":{"t":"Lavoro","e":"08:51","up":"13:35","rp":"14:10","u":"18:03"},
-  "2026-01-30":{"t":"Lavoro","e":"08:56","up":"13:06","rp":"13:40","u":"18:00"},
-  "2026-02-02":{"t":"Lavoro","e":"08:41","up":"13:25","rp":"14:00","u":"17:30"},
-  "2026-02-03":{"t":"Lavoro","e":"08:52","up":"13:00","rp":"13:40","u":"17:40"},
-  "2026-02-04":{"t":"Lavoro","e":"08:52","up":"13:10","rp":"13:50","u":"18:36"},
-  "2026-02-05":{"t":"Lavoro","e":"08:52","up":"13:22","rp":"14:08","u":"17:40"},
-  "2026-02-06":{"t":"Lavoro","e":"08:47","up":"13:18","rp":"14:00","u":"17:30"},
-  "2026-02-09":{"t":"Lavoro","e":"08:53","up":"14:00","rp":"14:40","u":"18:00"},
-  "2026-02-10":{"t":"Lavoro","e":"08:53","up":"13:10","rp":"13:40","u":"17:50"},
-  "2026-02-11":{"t":"Lavoro","e":"08:48","up":"12:37","rp":"13:10","u":"17:25"},
-  "2026-02-12":{"t":"Lavoro","e":"08:49","up":"13:08","rp":"13:45","u":"17:57"},
-  "2026-02-13":{"t":"Lavoro","e":"08:54","up":"13:00","rp":"13:01","u":"16:00","n":"Permesso Ritiro Auto - Cupra","po":0.91667},
-  "2026-02-16":{"t":"Lavoro","e":"08:57","up":"13:10","rp":"13:58","u":"19:53"},
-  "2026-02-17":{"t":"Lavoro","e":"08:51","up":"13:06","rp":"13:36","u":"17:30"},
-  "2026-02-18":{"t":"Lavoro","e":"08:55","up":"13:00","rp":"13:35","u":"17:48"},
-  "2026-02-19":{"t":"Lavoro","e":"08:49","up":"13:15","rp":"13:50","u":"17:30"},
-  "2026-02-20":{"t":"Lavoro","e":"08:50","up":"13:35","rp":"14:18","u":"17:35"},
-  "2026-02-23":{"t":"Lavoro","e":"08:57","up":"13:05","rp":"13:58","u":"17:55"},
-  "2026-02-24":{"t":"Lavoro","e":"09:56","up":"13:00","rp":"13:01","u":"18:10"},
-  "2026-02-25":{"t":"Lavoro","e":"08:46","up":"13:10","rp":"13:45","u":"17:40"},
-  "2026-02-26":{"t":"Lavoro","e":"08:49","up":"13:20","rp":"13:50","u":"18:00"},
-  "2026-02-27":{"t":"Lavoro","e":"08:48","up":"13:00","rp":"13:30","u":"17:50"},
-  "2026-03-02":{"t":"Lavoro","e":"08:51","up":"13:10","rp":"13:45","u":"17:30"},
-  "2026-03-03":{"t":"Lavoro","e":"08:50","up":"13:25","rp":"14:00","u":"17:30"},
-  "2026-03-04":{"t":"Lavoro","e":"08:41","up":"13:00","rp":"13:35","u":"17:20"},
-};
-
-/**
- * Merge intelligente dei SEED:
- * • Aggiunge le chiavi SEED mancanti nei dati utente (es. nuovi giorni storici aggiunti)
- * • Non sovrascrive MAI i dati già inseriti dall'utente
- * • Ritorna il numero di chiavi SEED aggiunte
- */
-function mergeSeed(data) {
-  let added = 0;
-  for (const [k, v] of Object.entries(SEED)) {
-    if (!(k in data)) {
-      data[k] = v;
-      added++;
-    }
-  }
-  return added;
-}
-
-/** SEED_VERSION: incrementa quando aggiungi nuove righe al SEED */
-const SEED_VERSION = 1;
-const SVK = 'presenze_seed_version';
-
-function initData() {
-  const savedSeedV = parseInt(localStorage.getItem(SVK) || '0', 10);
-  const data = loadData();
-
-  // Primo avvio: carica tutto il SEED
-  if (!Object.keys(data).length) {
-    saveData({ ...SEED });
-    localStorage.setItem(SVK, String(SEED_VERSION));
-    return;
-  }
-
-  // SEED aggiornato: merge non-distruttivo
-  if (savedSeedV < SEED_VERSION) {
-    const added = mergeSeed(data);
-    saveData(data);
-    localStorage.setItem(SVK, String(SEED_VERSION));
-    if (added > 0) {
-      console.info(`[Presenze] Seed aggiornato: ${added} nuove voci aggiunte.`);
-    }
-  }
-}
-
-function clearAll() {
-  if (!confirm('Sei sicuro? Tutti i dati verranno eliminati definitivamente.')) return;
-  localStorage.removeItem(SK);
-  renderAll();
-  showToast('Dati eliminati');
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   js/core/engine.js — Calcoli business logic
-   Modifica qui: come si calcolano ore lavorate, saldi ferie/permessi
-   ═══════════════════════════════════════════════════════════════ */
-
-/** Minuti lavorati in una giornata, oppure null */
-function oreG(r) {
-  if (!r || r.t !== 'Lavoro') return null;
-  const e = t2m(r.e), up = t2m(r.up), rp = t2m(r.rp), u = t2m(r.u);
-  if (e == null || u == null) return null;
-  let tot = u - e;
-  if (up != null && rp != null) tot -= (rp - up);
-  return tot;
-}
-
-/** Delta rispetto allo standard (minuti) */
-function dltG(r, std) {
-  const o = oreG(r);
-  if (o == null) return null;
-  return o - std;
-}
-
-/** Ore ferie/permessi godute in un mese, fino a upToDay incluso */
-function godutoMese(y, m, upToDay, data) {
-  let fG = 0, pG = 0;
-  const lim = upToDay ?? dim(y, m);
-  for (let d = 1; d <= lim; d++) {
-    const r = data[dk(y, m, d)];
-    if (!r) continue;
-    if (r.t === 'Ferie')    fG += ORE_GIORNATA;
-    if (r.t === 'Permesso') pG += ORE_GIORNATA;
-    if (r.t === 'Lavoro') {
-      if (r.po) pG += parseFloat(r.po) || 0;
-      if (r.fo) fG += parseFloat(r.fo) || 0;
-    }
-  }
-  return { fG, pG };
-}
-
-/**
- * Calcola ferie & permessi mese per mese da Feb 2026 fino a (toY, toM).
- * Se toToday=true e (toY,toM) è il mese corrente:
- *   - maturazione proporzionale ai giorni passati
- *   - goduto conta solo fino ad oggi incluso
- */
-function calcFP(toY, toM, toToday = false) {
-  const today = new Date();
-  const data  = loadData();
-  let fS = FER_SALDO_GEN26, pS = PERM_SALDO_GEN26;
-  if (toY < 2026 || (toY === 2026 && toM < 2)) return { fS, pS, months: [] };
-
-  const months = [];
-  let y = 2026, m = 2;
-
-  while (y < toY || (y === toY && m <= toM)) {
-    const isLast  = y === toY && m === toM;
-    const isCurr  = y === today.getFullYear() && m === today.getMonth() + 1;
-    const partial = isLast && toToday && isCurr;
-
-    let fMat = FER_MESE, pMat = PERM_MESE, upToDay = null;
-
-    if (partial) {
-      const nd   = dim(y, m);
-      const gone = today.getDate();
-      fMat     = FER_MESE  * (gone / nd);
-      pMat     = PERM_MESE * (gone / nd);
-      upToDay  = today.getDate();
-    }
-
-    const { fG, pG } = godutoMese(y, m, upToDay, data);
-    const fAP = fS, pAP = pS;
-    fS = fAP + fMat - fG;
-    pS = pAP + pMat - pG;
-    months.push({ y, m, fAP, fMat, fG, fS, pAP, pMat, pG, pS, partial });
-
-    if (++m > 12) { m = 1; y++; }
-  }
-
-  return { fS, pS, months };
-}
-
-/** Dati storici Gennaio 2026 da busta paga (statici) */
-function getFPJan2026() {
-  return {
-    fer: { ap: -2.16667,   mat: 13.33333, god: 16.0,  saldo: -4.83334  },
-    per: { ap: 188.83333, mat:  7.33333, god:  1.5,  saldo: 194.66666 }
-  };
-}
-
-
 /* ═══════════════════════════════════════════════════════════════
    js/components/icons.js — Icone SVG inline
    Modifica qui: cambia qualsiasi icona dell'app tutta in un posto
@@ -1951,7 +1735,6 @@ const svgClock    = () => Icons.clock();
 const svgDownload = () => Icons.download();
 const svgUpload   = () => Icons.upload();
 
-
 /* ═══════════════════════════════════════════════════════════════
    js/components/fpcard.js — Componente card ferie/permessi
    Usato da: views/mese.js e views/ferie.js
@@ -2009,7 +1792,6 @@ function renderFPCard(type, badge, ap, mat, god, saldo, isHistoric = false) {
       ${isHistoric ? '<div class="fp-note">Dati dalla busta paga Feb 2026 (rif. Gen 2026).</div>' : ''}
     </div>`;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    js/components/modal.js — Modal modifica giornata
@@ -2099,22 +1881,544 @@ function delDay() {
   showToast('Eliminato');
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   js/core/storage.js — Accesso al localStorage
+   ═══════════════════════════════════════════════════════════════ */
+
+const DATA_VERSION = 6;
+const SK     = `pres_v${DATA_VERSION}`;
+const CK     = `cfg_v${DATA_VERSION}`;
+const VK     = 'presenze_data_version';
+const BK_PRE = 'presenze_backup_v';
+const PK     = 'presenze_profile';
+
+const OLD_KEYS = [
+  { sk: 'pres_v5', ck: 'cfg_v5', v: 5 },
+  { sk: 'pres_v4', ck: 'cfg_v4', v: 4 },
+  { sk: 'pres_v3', ck: 'cfg_v3', v: 3 },
+];
+
+function loadData()   { try { return JSON.parse(localStorage.getItem(SK))  || {}; } catch { return {}; } }
+function saveData(d)  { localStorage.setItem(SK, JSON.stringify(d)); }
+function loadConfig() { try { return JSON.parse(localStorage.getItem(CK)) || {}; } catch { return {}; } }
+function getConfig()  { return { std: loadConfig().std || '08:00' }; }
+
+function saveConfig() {
+  const el  = document.getElementById('cfg-std');
+  const val = (el && el.value) ? el.value : '08:00';
+  localStorage.setItem(CK, JSON.stringify({ std: val }));
+}
+
+function loadUserProfile() {
+  try { return JSON.parse(localStorage.getItem(PK)) || {}; } catch { return {}; }
+}
+function saveUserProfile(p) { localStorage.setItem(PK, JSON.stringify(p)); }
+function isOnboardingDone() { return !!loadUserProfile().onboardingDone; }
+
+function backupData(fromVersion, data, config) {
+  try {
+    localStorage.setItem(BK_PRE + fromVersion, JSON.stringify({
+      timestamp: new Date().toISOString(), fromVersion, data, config
+    }));
+  } catch(e) { console.warn('Backup fallito:', e); }
+}
+
+function migrateIfNeeded() {
+  const savedVersion = parseInt(localStorage.getItem(VK) || '0', 10);
+  if (savedVersion === DATA_VERSION && localStorage.getItem(SK)) {
+    return { migrated: false, fromVersion: null };
+  }
+  for (const old of OLD_KEYS) {
+    const raw = localStorage.getItem(old.sk);
+    if (!raw) continue;
+    let oldData = {};
+    try { oldData = JSON.parse(raw) || {}; } catch { continue; }
+    const oldConfig = (() => { try { return JSON.parse(localStorage.getItem(old.ck)) || {}; } catch { return {}; } })();
+    backupData(old.v, oldData, oldConfig);
+    const existing = loadData();
+    saveData({ ...oldData, ...existing });
+    if (!localStorage.getItem(CK) && oldConfig.std) {
+      localStorage.setItem(CK, JSON.stringify({ std: oldConfig.std }));
+    }
+    localStorage.setItem(VK, String(DATA_VERSION));
+    console.info(`[Presenze] Migrazione v${old.v} → v${DATA_VERSION} completata.`);
+    return { migrated: true, fromVersion: old.v };
+  }
+  localStorage.setItem(VK, String(DATA_VERSION));
+  return { migrated: false, fromVersion: null };
+}
+
+// Nessun SEED — nuovi utenti partono da zero
+function initData() {}
+
+function clearAll() {
+  if (!confirm('Sei sicuro? Tutti i dati verranno eliminati definitivamente.')) return;
+  localStorage.removeItem(SK);
+  localStorage.removeItem(PK);
+  localStorage.removeItem(CK);
+  localStorage.removeItem(VK);
+  location.reload();
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   js/core/constants.js — Costanti globali: locale
+   I valori di contratto ora vengono dal profilo utente (onboarding).
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── VERSIONE APP ─────────────────────────────────────────────
+const APP_VERSION = '1.1.0';
+
+// ─── LOCALE ───────────────────────────────────────────────────
+const DI       = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const DI_SHORT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const MI       = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MI_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+// ─── CONTRATTO (fallback se profilo non configurato) ──────────
+// Questi valori vengono sovrascritti dinamicamente da getUserContract()
+const ORE_GIORNATA = 8;
+
+// ─── HELPERS PROFILO ──────────────────────────────────────────
+/** Restituisce i parametri contrattuali dal profilo utente */
+function getUserContract() {
+  const p = loadUserProfile();
+  return {
+    oreStd:   p.oreStd   || 8,
+    ferMese:  p.ferMese  || 13.33333,
+    permMese: p.permMese || 7.33333,
+  };
+}
+
+/**
+ * Trova l'anchor più recente (busta paga) precedente o uguale a (toY, toM).
+ * Ritorna { data, fer, perm, y, m } oppure null.
+ */
+function getLastAnchor(toY, toM) {
+  const p = loadUserProfile();
+  const buste = (p.bustePagate || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  for (const b of buste) {
+    const [by, bm] = b.data.split('-').map(Number);
+    if (by < toY || (by === toY && bm <= toM)) {
+      return { ...b, y: by, m: bm };
+    }
+  }
+  return null;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   js/core/engine.js — Calcoli business logic
+   Usa il profilo utente per ferie/permessi invece di costanti hardcoded.
+   ═══════════════════════════════════════════════════════════════ */
+
+function oreG(r) {
+  if (!r || r.t !== 'Lavoro') return null;
+  const e = t2m(r.e), up = t2m(r.up), rp = t2m(r.rp), u = t2m(r.u);
+  if (e == null || u == null) return null;
+  let tot = u - e;
+  if (up != null && rp != null) tot -= (rp - up);
+  return tot;
+}
+
+function dltG(r, std) {
+  const o = oreG(r);
+  if (o == null) return null;
+  return o - std;
+}
+
+function godutoMese(y, m, upToDay, data) {
+  const contract = getUserContract();
+  let fG = 0, pG = 0;
+  const lim = upToDay ?? dim(y, m);
+  for (let d = 1; d <= lim; d++) {
+    const r = data[dk(y, m, d)];
+    if (!r) continue;
+    if (r.t === 'Ferie')    fG += contract.oreStd;
+    if (r.t === 'Permesso') pG += contract.oreStd;
+    if (r.t === 'Lavoro') {
+      if (r.po) pG += parseFloat(r.po) || 0;
+      if (r.fo) fG += parseFloat(r.fo) || 0;
+    }
+  }
+  return { fG, pG };
+}
+
+/**
+ * Calcola ferie & permessi partendo dall'anchor più recente.
+ * Se non c'è ancora onboarding, ritorna valori vuoti.
+ */
+function calcFP(toY, toM, toToday = false) {
+  const today    = new Date();
+  const data     = loadData();
+  const contract = getUserContract();
+  const anchor   = getLastAnchor(toY, toM);
+
+  if (!anchor) return { fS: 0, pS: 0, months: [] };
+
+  let fS = anchor.fer;
+  let pS = anchor.perm;
+  let startY = anchor.y;
+  let startM = anchor.m;
+
+  // Avanza di un mese dopo l'anchor (quello è il punto di partenza)
+  if (++startM > 12) { startM = 1; startY++; }
+
+  // Se il target è prima o uguale all'anchor, ritorna solo l'anchor
+  if (startY > toY || (startY === toY && startM > toM)) {
+    return { fS, pS, months: [] };
+  }
+
+  const months = [];
+  let y = startY, m = startM;
+
+  while (y < toY || (y === toY && m <= toM)) {
+    const isLast  = y === toY && m === toM;
+    const isCurr  = y === today.getFullYear() && m === today.getMonth() + 1;
+    const partial = isLast && toToday && isCurr;
+
+    let fMat = contract.ferMese, pMat = contract.permMese, upToDay = null;
+
+    if (partial) {
+      const nd   = dim(y, m);
+      const gone = today.getDate();
+      fMat    = contract.ferMese  * (gone / nd);
+      pMat    = contract.permMese * (gone / nd);
+      upToDay = today.getDate();
+    }
+
+    const { fG, pG } = godutoMese(y, m, upToDay, data);
+    const fAP = fS, pAP = pS;
+    fS = fAP + fMat - fG;
+    pS = pAP + pMat - pG;
+    months.push({ y, m, fAP, fMat, fG, fS, pAP, pMat, pG, pS, partial });
+
+    if (++m > 12) { m = 1; y++; }
+  }
+
+  return { fS, pS, months };
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   js/views/onboarding.js — Configurazione iniziale e reminder busta
+   Appare al primo avvio e richiamabile da Impostazioni.
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── STEP STATE ───────────────────────────────────────────────
+let _obStep = 1;
+const OB_STEPS = 3;
+
+function showOnboarding(fromSettings = false) {
+  _obStep = 1;
+  _renderOnboarding(fromSettings);
+}
+
+function _renderOnboarding(fromSettings = false) {
+  const overlay = document.getElementById('onboarding-overlay');
+  overlay.classList.add('open');
+  _renderObStep(fromSettings);
+}
+
+function closeOnboarding() {
+  document.getElementById('onboarding-overlay').classList.remove('open');
+}
+
+function _renderObStep(fromSettings = false) {
+  const body = document.getElementById('ob-body');
+  const prog = document.getElementById('ob-progress');
+
+  // Progress dots
+  prog.innerHTML = Array.from({length: OB_STEPS}, (_, i) =>
+    `<div class="ob-dot${i + 1 === _obStep ? ' active' : ''}"></div>`
+  ).join('');
+
+  if (_obStep === 1) _obStep1(body, fromSettings);
+  if (_obStep === 2) _obStep2(body);
+  if (_obStep === 3) _obStep3(body, fromSettings);
+}
+
+// ── Step 1: Contratto ─────────────────────────────────────────
+function _obStep1(body, fromSettings) {
+  const cfg = loadUserProfile();
+  body.innerHTML = `
+    <div class="ob-icon">📋</div>
+    <div class="ob-title">Il tuo contratto</div>
+    <div class="ob-desc">Inserisci i dati del tuo contratto di lavoro. Servono per calcolare correttamente ore e saldi.</div>
+
+    <div class="ob-fields">
+      <div class="field-group">
+        <label class="field-label">Ore giornaliere contrattuali</label>
+        <input type="number" id="ob-ore-std" class="field-input" step="0.5" min="1" max="12"
+          value="${cfg.oreStd || 8}" placeholder="8">
+        <div class="field-hint">Es. 8 per una giornata standard di 8 ore</div>
+      </div>
+
+      <div class="ob-row-2">
+        <div class="field-group">
+          <label class="field-label">Ferie maturate / mese (ore)</label>
+          <input type="number" id="ob-fer-mat" class="field-input" step="0.01" min="0"
+            value="${cfg.ferMese || ''}" placeholder="13.33">
+          <div class="field-hint">Dalla busta paga — voce "Maturato Ferie"</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Permessi maturati / mese (ore)</label>
+          <input type="number" id="ob-perm-mat" class="field-input" step="0.01" min="0"
+            value="${cfg.permMese || ''}" placeholder="7.33">
+          <div class="field-hint">Dalla busta paga — voce "Maturato Permessi"</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Giorno di ricezione busta paga</label>
+        <input type="number" id="ob-busta-giorno" class="field-input" step="1" min="1" max="31"
+          value="${cfg.bustaGiorno || ''}" placeholder="Es. 27">
+        <div class="field-hint">Il giorno del mese in cui ricevi normalmente la busta paga</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block ob-next-btn" onclick="_obNext1(${fromSettings})">
+      Continua →
+    </button>
+    ${fromSettings ? `<button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="closeOnboarding()">Annulla</button>` : ''}
+  `;
+}
+
+function _obNext1(fromSettings) {
+  const oreStd    = parseFloat(document.getElementById('ob-ore-std').value);
+  const ferMese   = parseFloat(document.getElementById('ob-fer-mat').value);
+  const permMese  = parseFloat(document.getElementById('ob-perm-mat').value);
+  const bustaGiorno = parseInt(document.getElementById('ob-busta-giorno').value);
+
+  if (!oreStd || oreStd < 1)        return _obError('Inserisci le ore giornaliere');
+  if (!ferMese || ferMese < 0)      return _obError('Inserisci le ferie mensili');
+  if (!permMese || permMese < 0)    return _obError('Inserisci i permessi mensili');
+  if (!bustaGiorno || bustaGiorno < 1 || bustaGiorno > 31) return _obError('Inserisci un giorno valido (1-31)');
+
+  const profile = loadUserProfile();
+  profile.oreStd     = oreStd;
+  profile.ferMese    = ferMese;
+  profile.permMese   = permMese;
+  profile.bustaGiorno = bustaGiorno;
+  saveUserProfile(profile);
+
+  _obStep = 2;
+  _renderObStep(fromSettings);
+}
+
+// ── Step 2: Saldi dalla busta paga ───────────────────────────
+function _obStep2(body) {
+  const cfg = loadUserProfile();
+  const oggi = new Date();
+  const maxDate = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2,'0')}-${String(oggi.getDate()).padStart(2,'0')}`;
+
+  body.innerHTML = `
+    <div class="ob-icon">🧾</div>
+    <div class="ob-title">Saldi dalla busta paga</div>
+    <div class="ob-desc">Inserisci i saldi di ferie e permessi dall'<strong>ultima busta paga</strong> che hai ricevuto. Questi diventano il punto di partenza dei calcoli.</div>
+
+    <div class="ob-fields">
+      <div class="field-group">
+        <label class="field-label">Data di riferimento della busta</label>
+        <input type="date" id="ob-busta-data" class="field-input"
+          max="${maxDate}"
+          value="${cfg.bustaSaldoData || ''}">
+        <div class="field-hint">Il mese a cui si riferisce la busta (es. se è la busta di Febbraio, metti l'ultimo giorno di Febbraio)</div>
+      </div>
+
+      <div class="ob-row-2">
+        <div class="field-group">
+          <label class="field-label">Saldo ferie (ore)</label>
+          <input type="number" id="ob-fer-saldo" class="field-input" step="0.01"
+            value="${cfg.ferSaldo ?? ''}" placeholder="Es. -4.83">
+          <div class="field-hint">Voce "Saldo" o "Residuo" Ferie</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Saldo permessi (ore)</label>
+          <input type="number" id="ob-perm-saldo" class="field-input" step="0.01"
+            value="${cfg.permSaldo ?? ''}" placeholder="Es. 194.67">
+          <div class="field-hint">Voce "Saldo" o "Residuo" Permessi</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-ghost" onclick="_obBack()">← Indietro</button>
+      <button class="btn btn-primary" style="flex:1" onclick="_obNext2()">Continua →</button>
+    </div>
+  `;
+}
+
+function _obNext2() {
+  const bustaData  = document.getElementById('ob-busta-data').value;
+  const ferSaldo   = parseFloat(document.getElementById('ob-fer-saldo').value);
+  const permSaldo  = parseFloat(document.getElementById('ob-perm-saldo').value);
+
+  if (!bustaData)                        return _obError('Inserisci la data della busta');
+  if (isNaN(ferSaldo))                   return _obError('Inserisci il saldo ferie');
+  if (isNaN(permSaldo))                  return _obError('Inserisci il saldo permessi');
+
+  const profile = loadUserProfile();
+  profile.bustaSaldoData  = bustaData;
+  profile.ferSaldo        = ferSaldo;
+  profile.permSaldo       = permSaldo;
+  // Segnamo che questa è la "busta ancora" — il primo anchor
+  profile.bustePagate     = profile.bustePagate || [];
+  // Aggiorna o aggiungi questo mese come anchor
+  const existing = profile.bustePagate.findIndex(b => b.data === bustaData);
+  const anchor   = { data: bustaData, fer: ferSaldo, perm: permSaldo };
+  if (existing >= 0) profile.bustePagate[existing] = anchor;
+  else profile.bustePagate.push(anchor);
+  profile.bustePagate.sort((a,b) => a.data.localeCompare(b.data));
+
+  saveUserProfile(profile);
+
+  _obStep = 3;
+  _renderObStep();
+}
+
+// ── Step 3: Riepilogo ─────────────────────────────────────────
+function _obStep3(body, fromSettings) {
+  const cfg = loadUserProfile();
+  const [y, m] = (cfg.bustaSaldoData || '').split('-').map(Number);
+  const meseBusta = (m && y) ? `${MI[m-1]} ${y}` : '—';
+
+  body.innerHTML = `
+    <div class="ob-icon">✅</div>
+    <div class="ob-title">${fromSettings ? 'Configurazione aggiornata' : 'Tutto pronto!'}</div>
+    <div class="ob-desc">Ecco il riepilogo della tua configurazione.</div>
+
+    <div class="ob-recap">
+      <div class="ob-recap-row">
+        <span>Ore giornaliere</span>
+        <strong>${cfg.oreStd}h</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Ferie mensili</span>
+        <strong>${cfg.ferMese?.toFixed(2)}h</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Permessi mensili</span>
+        <strong>${cfg.permMese?.toFixed(2)}h</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Busta di riferimento</span>
+        <strong>${meseBusta}</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Saldo ferie</span>
+        <strong>${cfg.ferSaldo?.toFixed(2)}h</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Saldo permessi</span>
+        <strong>${cfg.permSaldo?.toFixed(2)}h</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Busta in arrivo ogni mese il</span>
+        <strong>giorno ${cfg.bustaGiorno}</strong>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block ob-next-btn" onclick="_obComplete()">
+      ${fromSettings ? 'Salva e chiudi' : 'Inizia a usare l\'app →'}
+    </button>
+    <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="_obBack()">← Modifica</button>
+  `;
+}
+
+function _obComplete() {
+  const profile = loadUserProfile();
+  profile.onboardingDone = true;
+  saveUserProfile(profile);
+  closeOnboarding();
+  // Aggiorna config orario standard
+  const stdH = profile.oreStd || 8;
+  const hh = String(Math.floor(stdH)).padStart(2,'0');
+  const mm = String(Math.round((stdH % 1) * 60)).padStart(2,'0');
+  localStorage.setItem(CK, JSON.stringify({ std: `${hh}:${mm}` }));
+  renderAll();
+  showToast('Configurazione salvata ✓', 'success');
+}
+
+function _obBack() {
+  if (_obStep > 1) { _obStep--; _renderObStep(); }
+}
+
+function _obError(msg) {
+  showToast(msg, 'error');
+}
+
+// ─── REMINDER BUSTA PAGA ──────────────────────────────────────
+/**
+ * Controlla se oggi è il giorno della busta e se non è ancora
+ * stata registrata per questo mese. Se sì, mostra il reminder.
+ */
+function checkBustaReminder() {
+  const profile = loadUserProfile();
+  if (!profile.onboardingDone) return;
+  if (!profile.bustaGiorno)    return;
+
+  const oggi = new Date();
+  const giornoOggi = oggi.getDate();
+  if (giornoOggi !== profile.bustaGiorno) return;
+
+  // Controlla se questo mese ha già un anchor
+  const y = oggi.getFullYear();
+  const m = oggi.getMonth() + 1;
+  // La busta di questo mese si riferisce al mese precedente
+  const meseRif = m === 1 ? 12 : m - 1;
+  const annoRif = m === 1 ? y - 1 : y;
+  const dataRif = `${annoRif}-${String(meseRif).padStart(2,'0')}-01`;
+
+  const giaInserita = (profile.bustePagate || []).some(b => {
+    const [by, bm] = b.data.split('-').map(Number);
+    return by === annoRif && bm === meseRif;
+  });
+
+  if (!giaInserita) {
+    showBustaReminder(meseRif, annoRif);
+  }
+}
+
+function showBustaReminder(mese, anno) {
+  const banner = document.getElementById('busta-reminder');
+  if (!banner) return;
+  banner.querySelector('.br-text').innerHTML =
+    `<strong>Hai ricevuto la busta di ${MI[mese-1]} ${anno}?</strong> Aggiorna i saldi ferie e permessi.`;
+  banner.classList.add('visible');
+}
+
+function openBustaUpdate() {
+  document.getElementById('busta-reminder')?.classList.remove('visible');
+  // Vai direttamente allo step 2 dell'onboarding (inserimento saldi)
+  _obStep = 2;
+  _renderOnboarding(true);
+}
+
+function dismissBustaReminder() {
+  document.getElementById('busta-reminder')?.classList.remove('visible');
+}
+
 
 /* ═══════════════════════════════════════════════════════════════
    js/views/mese.js — Vista mensile
-   Modifica qui: layout mese, quick bar, righe giorno, pannello FP
    ═══════════════════════════════════════════════════════════════ */
 
 function renderMese() {
-  const cfg = getConfig(), std = t2m(cfg.std) || 480, data = loadData();
-  const now  = new Date();
+  const cfg      = getConfig();
+  const contract = getUserContract();
+  const std      = t2m(cfg.std) || (contract.oreStd * 60);
+  const data     = loadData();
+  const now      = new Date();
   const todayKey = dk(now.getFullYear(), now.getMonth() + 1, now.getDate());
   const isNow    = cY === now.getFullYear() && cM === now.getMonth() + 1;
   const el       = document.getElementById('view-mese');
 
+  // Header subtitle: solo mese e anno (non ripete "Presenze")
   document.getElementById('header-subtitle').textContent = `${MI[cM - 1]} ${cY}`;
 
-  // ── Calcolo statistiche mensili ────────────────────────────
+  // ── Statistiche mensili ────────────────────────────────────
   let totO = 0, ggL = 0, str = 0, deb = 0, ferD = 0, malD = 0, permD = 0;
   for (let d = 1; d <= dim(cY, cM); d++) {
     const r = data[dk(cY, cM, d)];
@@ -2135,9 +2439,9 @@ function renderMese() {
     <div class="stat-card" style="grid-column:1/-1">
       <div class="stat-label">Assenze questo mese</div>
       <div style="display:flex;gap:16px;margin-top:4px">
-        ${ferD  > 0 ? `<div><span class="stat-value c-amber" style="font-size:.95rem">${ferD}</span>  <span class="stat-sub">ferie</span></div>` : ''}
+        ${ferD  > 0 ? `<div><span class="stat-value c-amber" style="font-size:.95rem">${ferD}</span> <span class="stat-sub">ferie</span></div>` : ''}
         ${permD > 0 ? `<div><span class="stat-value c-teal"  style="font-size:.95rem">${permD}</span> <span class="stat-sub">permesso</span></div>` : ''}
-        ${malD  > 0 ? `<div><span class="stat-value c-red"   style="font-size:.95rem">${malD}</span>  <span class="stat-sub">malattia</span></div>` : ''}
+        ${malD  > 0 ? `<div><span class="stat-value c-red"   style="font-size:.95rem">${malD}</span> <span class="stat-sub">malattia</span></div>` : ''}
       </div>
     </div>` : '';
 
@@ -2158,13 +2462,8 @@ function renderMese() {
 
   // ── FP Panel ───────────────────────────────────────────────
   let fpHtml = '';
-  if (cY === 2026 && cM === 1) {
-    const j = getFPJan2026();
-    fpHtml = `<div class="fp-grid">
-      ${renderFPCard('fer', 'busta paga Gen', j.fer.ap, j.fer.mat, j.fer.god, j.fer.saldo, true)}
-      ${renderFPCard('per', 'busta paga Gen', j.per.ap, j.per.mat, j.per.god, j.per.saldo, true)}
-    </div>`;
-  } else if (cY > 2026 || (cY === 2026 && cM >= 2)) {
+  const anchor = getLastAnchor(cY, cM);
+  if (anchor) {
     const fp  = calcFP(cY, cM, isNow);
     const cur = fp.months[fp.months.length - 1];
     if (cur) {
@@ -2175,22 +2474,42 @@ function renderMese() {
         ${renderFPCard('fer', lbl, cur.fAP, cur.fMat, cur.fG, cur.fS)}
         ${renderFPCard('per', lbl, cur.pAP, cur.pMat, cur.pG, cur.pS)}
       </div>`;
+    } else if (fp.months.length === 0) {
+      // Mese uguale o precedente all'anchor — mostra saldo anchor
+      fpHtml = `<div class="fp-grid">
+        ${renderFPCard('fer', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.fer, true)}
+        ${renderFPCard('per', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.perm, true)}
+      </div>`;
     }
+  } else if (isOnboardingDone()) {
+    fpHtml = `<div class="fp-empty">
+      <p>Nessun saldo busta inserito per questo periodo.</p>
+    </div>`;
   }
 
   // ── Quick bar (solo mese corrente) ─────────────────────────
+  // I valori di default vengono dall'orario standard configurato
+  const defE  = '08:45';
+  const defUP = '13:00';
+  const defRP = '13:30';
+  // Uscita di default calcolata: entrata + ore std + pausa pranzo 30min
+  const stdMin   = contract.oreStd * 60;
+  const pausaMin = 30;
+  const uscitaM  = t2m(defE) + stdMin + pausaMin;
+  const defU     = m2t(uscitaM).replace('+','');
+
   const qbarHtml = isNow ? `
     <div class="quick-bar">
       <div class="quick-bar-label">
         Inserimento rapido — ${DI[now.getDay()]}, ${now.getDate()} ${MI[now.getMonth()]} ${now.getFullYear()}
       </div>
       <div class="quick-inputs">
-        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e" value="08:45"></div>
-        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="13:00"></div>
-        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="13:30"></div>
-        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u" value="17:30"></div>
+        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e" value="${defE}"></div>
+        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="${defUP}"></div>
+        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="${defRP}"></div>
+        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u" value="${defU}"></div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="quickSave()">Salva</button>
+      <button class="btn btn-primary btn-sm" onclick="quickSave()">Salva oggi</button>
     </div>` : '';
 
   // ── Settimane ──────────────────────────────────────────────
@@ -2215,17 +2534,17 @@ function renderMese() {
       const isToday = dk(y, m, d) === todayKey;
       const tipo    = we ? 'Weekend' : (r?.t || '');
 
-      const badgeMap  = { Lavoro:'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
-                          Malattia:'badge-malattia', Permesso:'badge-permesso' };
-      const badgeCls  = badgeMap[tipo] || '';
+      const badgeMap = { Lavoro:'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
+                         Malattia:'badge-malattia', Permesso:'badge-permesso' };
+      const badgeCls = badgeMap[tipo] || '';
 
       const rowClass = [
         'day-row',
-        we      ? 'weekend'      : '',
-        isToday ? 'today'        : '',
-        om      ? 'other-month'  : '',
-        r?.t === 'Ferie'    ? 'ferie-row'   : '',
-        r?.t === 'Permesso' ? 'permesso-row': ''
+        we      ? 'weekend'       : '',
+        isToday ? 'today'         : '',
+        om      ? 'other-month'   : '',
+        r?.t === 'Ferie'    ? 'ferie-row'    : '',
+        r?.t === 'Permesso' ? 'permesso-row' : ''
       ].filter(Boolean).join(' ');
 
       const dateLabel = om
@@ -2251,7 +2570,7 @@ function renderMese() {
           <div class="day-date">${dateLabel}</div>
           <div>${tipo && !we ? `<span class="badge ${badgeCls}">${tipo}</span>` : ''}</div>
           <div class="day-center">
-            ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · ' + absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
+            ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · '+absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
             ${noteStr  ? `<div class="day-note">${noteStr}</div>` : ''}
           </div>
           <div class="day-right">
@@ -2277,7 +2596,6 @@ function renderMese() {
       </div>`;
   }).join('');
 
-  // ── Render finale ──────────────────────────────────────────
   el.innerHTML = `
     <div class="month-nav">
       <button class="nav-btn" onclick="chMonth(-1)">${Icons.chevronLeft()}</button>
@@ -2293,315 +2611,62 @@ function renderMese() {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   js/views/anno.js — Vista annuale
-   Modifica qui: griglia mesi, riepilogo FP annuale, statistiche anno
+   js/views/settings.js — Vista impostazioni
    ═══════════════════════════════════════════════════════════════ */
 
-function renderAnno() {
-  const cfg  = getConfig(), std = t2m(cfg.std) || 480, data = loadData();
-  const now  = new Date(), isCY = vY === now.getFullYear();
-  const el   = document.getElementById('view-anno');
+function renderSettings() {
+  const cfg     = getConfig();
+  const profile = loadUserProfile();
+  const el      = document.getElementById('view-settings');
 
-  document.getElementById('header-subtitle').textContent = String(vY);
+  document.getElementById('header-subtitle').textContent = 'Impostazioni';
 
-  // ── Selezione anno ─────────────────────────────────────────
-  const years = new Set([2026]);
-  Object.keys(data).forEach(k => {
-    const y = parseInt(k);
-    if (y >= 2020 && y <= 2035) years.add(y);
-  });
-  const yearBtns = [...years].sort().map(y =>
-    `<button class="year-btn${y === vY ? ' active' : ''}" onclick="vY=${y};renderAnno()">${y}</button>`
-  ).join('');
+  const anchor = getLastAnchor(9999, 12);
+  const [ay, am] = anchor ? anchor.data.split('-').map(Number) : [null, null];
+  const anchorLabel = anchor
+    ? `Busta di ${MI[am-1]} ${ay} — ferie ${anchor.fer?.toFixed(2)}h, permessi ${anchor.perm?.toFixed(2)}h`
+    : 'Nessuna busta inserita';
 
-  // ── Statistiche annuali ────────────────────────────────────
-  let tO = 0, tG = 0, tS = 0, tD = 0;
-  for (let mo = 1; mo <= 12; mo++) {
-    for (let d = 1; d <= dim(vY, mo); d++) {
-      const r  = data[dk(vY, mo, d)];
-      if (!r || r.t !== 'Lavoro') continue;
-      const o  = oreG(r), dl = dltG(r, std);
-      if (o  != null) { tO += o; tG++; }
-      if (dl != null) { if (dl > 0) tS += dl; else tD += dl; }
-    }
-  }
-  const saldo = tS + tD;
-
-  const statCards = `
-    <div class="stat-row">
-      <div class="stat-card">
-        <div class="stat-label">Ore anno</div>
-        <div class="stat-value c-blue">${m2t(tO)}</div>
-        <div class="stat-sub">${tG} giorni lavorati</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Saldo netto</div>
-        <div class="stat-value ${saldo >= 0 ? 'c-green' : 'c-red'}">${m2t(saldo, true)}</div>
-        <div class="stat-sub">${m2t(tS, true)} str. totale</div>
-      </div>
-    </div>`;
-
-  // ── FP annuale ─────────────────────────────────────────────
-  const endMo = isCY ? now.getMonth() + 1 : 12;
-  const fp    = calcFP(vY, endMo, isCY);
-  const last  = fp.months[fp.months.length - 1];
-
-  let annualFpHtml = '';
-  if (last) {
-    const lbl    = isCY ? 'ad oggi' : 'fine anno';
-    const ferMat = fp.months.reduce((a, x) => a + x.fMat, 0);
-    const ferGod = fp.months.reduce((a, x) => a + x.fG,   0);
-    const perMat = fp.months.reduce((a, x) => a + x.pMat, 0);
-    const perGod = fp.months.reduce((a, x) => a + x.pG,   0);
-
-    annualFpHtml = `
-      <div class="annual-fp">
-        <div class="annual-fp-card fer">
-          <h4>Ferie — ${lbl}</h4>
-          <div class="annual-fp-row">
-            <span class="k">Maturato</span>
-            <span class="v c-amber">${hRound(ferMat).toFixed(2)}h &nbsp;(${(ferMat / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${hRound(ferGod).toFixed(2)}h &nbsp;(${(ferGod / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Saldo</span>
-            <span class="v ${last.fS >= 0 ? 'c-amber' : 'c-red'}">
-              ${hRound(last.fS).toFixed(2)}h &nbsp;(${(last.fS / ORE_GIORNATA).toFixed(1)}g)
-            </span>
-          </div>
-        </div>
-        <div class="annual-fp-card per">
-          <h4>Permessi — ${lbl}</h4>
-          <div class="annual-fp-row">
-            <span class="k">Maturato</span>
-            <span class="v c-teal">${hRound(perMat).toFixed(2)}h &nbsp;(${(perMat / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${hRound(perGod).toFixed(2)}h &nbsp;(${(perGod / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Saldo</span>
-            <span class="v ${last.pS >= 0 ? 'c-teal' : 'c-red'}">
-              ${hRound(last.pS).toFixed(2)}h &nbsp;(${(last.pS / ORE_GIORNATA).toFixed(1)}g)
-            </span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  // ── Griglia mesi ───────────────────────────────────────────
-  const monthCards = [];
-  for (let mo = 1; mo <= 12; mo++) {
-    let mO = 0, g = 0, s = 0, dv = 0, mFerD = 0, mPermD = 0;
-    for (let d = 1; d <= dim(vY, mo); d++) {
-      const r = data[dk(vY, mo, d)];
-      if (!r) continue;
-      const o = oreG(r), dl = dltG(r, std);
-      if (r.t === 'Lavoro' && o != null) { mO += o; g++; if (dl > 0) s += dl; else if (dl < 0) dv += dl; }
-      if (r.t === 'Ferie')   mFerD++;
-      if (r.t === 'Permesso') mPermD++;
-    }
-    const pct      = g > 0 ? Math.min(100, Math.round(mO / (g * std) * 100)) : 0;
-    const barColor = pct >= 100 ? 'var(--green)' : pct >= 80 ? 'var(--amber)' : 'var(--red)';
-    const mSaldo   = s + dv;
-
-    // FP saldo per il mese
-    let fpRow = '';
-    if (vY > 2026 || (vY === 2026 && mo >= 2)) {
-      const fpM = calcFP(vY, mo, false);
-      const lmx = fpM.months[fpM.months.length - 1];
-      if (lmx) {
-        fpRow = `
-          <div class="month-row">
-            <span class="k">Ferie saldo</span>
-            <span class="v ${lmx.fS >= 0 ? 'c-amber' : 'c-red'}">${hRound(lmx.fS).toFixed(1)}h (${(lmx.fS / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="month-row">
-            <span class="k">Perm. saldo</span>
-            <span class="v ${lmx.pS >= 0 ? 'c-teal' : 'c-red'}">${hRound(lmx.pS).toFixed(1)}h (${(lmx.pS / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>`;
-      }
-    }
-
-    monthCards.push(`
-      <div class="month-card" onclick="cM=${mo};cY=${vY};showView('mese')">
-        <h4>${MI[mo - 1]} <span>${g} gg lav.</span></h4>
-        <div class="month-row"><span class="k">Ore lavorate</span><span class="v">${m2t(mO)}</span></div>
-        <div class="month-row"><span class="k">Saldo ore</span><span class="v ${mSaldo >= 0 ? 'c-green' : 'c-red'}">${m2t(mSaldo, true)}</span></div>
-        ${mFerD  > 0 ? `<div class="month-row"><span class="k">Ferie</span><span class="v c-amber">${mFerD} gg</span></div>` : ''}
-        ${mPermD > 0 ? `<div class="month-row"><span class="k">Permessi</span><span class="v c-teal">${mPermD} gg</span></div>` : ''}
-        ${fpRow}
-        <div class="month-bar-track">
-          <div class="month-bar-fill" style="width:${pct}%;background:${barColor}"></div>
-        </div>
-      </div>`);
-  }
-
-  // ── Render finale ──────────────────────────────────────────
   el.innerHTML = `
-    <div class="year-selector">${yearBtns}</div>
-    ${statCards}
-    ${annualFpHtml}
-    <div class="section-label">Dettaglio mensile — tocca per aprire</div>
-    <div class="month-grid">${monthCards.join('')}</div>`;
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   js/views/ferie.js — Vista ferie & permessi
-   Modifica qui: layout saldi, tabelle mensili, dettaglio FP
-   ═══════════════════════════════════════════════════════════════ */
-
-function renderFerie() {
-  const now = new Date();
-  const el  = document.getElementById('view-ferie');
-
-  document.getElementById('header-subtitle').textContent = 'Ferie & Permessi';
-
-  const fp   = calcFP(now.getFullYear(), now.getMonth() + 1, true);
-  const last = fp.months[fp.months.length - 1];
-
-  if (!last) {
-    el.innerHTML = '<p style="color:var(--text-tertiary);padding:16px 0">Nessun dato disponibile.</p>';
-    return;
-  }
-
-  // ── Saldi complessivi ──────────────────────────────────────
-  const ferSaldoH  = hRound(last.fS);
-  const ferSaldoG  = (last.fS / ORE_GIORNATA).toFixed(1);
-  const permSaldoH = hRound(last.pS);
-  const permSaldoG = (last.pS / ORE_GIORNATA).toFixed(1);
-
-  const ferTotMat  = fp.months.reduce((a, x) => a + x.fMat, 0);
-  const ferTotGod  = fp.months.reduce((a, x) => a + x.fG,   0);
-  const permTotMat = fp.months.reduce((a, x) => a + x.pMat, 0);
-  const permTotGod = fp.months.reduce((a, x) => a + x.pG,   0);
-
-  const todayLabel = `ad oggi, ${now.getDate()} ${MI[now.getMonth()]} ${now.getFullYear()}`;
-
-  const summaryCards = `
-    <div class="fp-summary-card fer">
-      <div class="fp-summary-header">
-        <div>
-          <div class="fp-summary-title">${Icons.sun(14)} Ferie</div>
-          <div style="font-size:.7rem;color:var(--text-tertiary);margin-top:4px">${todayLabel}</div>
-        </div>
-        <div class="fp-big-value">
-          <div class="hours ${ferSaldoH >= 0 ? 'c-amber' : 'c-red'}">
-            ${ferSaldoH >= 0 ? '+' : ''}${ferSaldoH.toFixed(2)}h
+    <div class="settings-section">
+      <div class="settings-section-title">Profilo contratto</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Ore standard / giorno</div>
+            <div class="desc">${profile.oreStd || 8}h contrattuali</div>
           </div>
-          <div class="days-label">${parseFloat(ferSaldoG) >= 0 ? '+' : ''}${ferSaldoG} giorni</div>
+          <button class="btn btn-ghost btn-sm" onclick="showOnboarding(true)">Modifica</button>
         </div>
-      </div>
-      <div class="fp-detail-grid">
-        <div class="fp-detail-item">
-          <span class="v c-amber">${hRound(ferTotMat).toFixed(2)}h</span>
-          <span class="k">Maturato</span>
-          <span class="kd">${(ferTotMat / ORE_GIORNATA).toFixed(1)}g</span>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Maturazione mensile</div>
+            <div class="desc">Ferie ${profile.ferMese?.toFixed(2) || '—'}h · Permessi ${profile.permMese?.toFixed(2) || '—'}h</div>
+          </div>
         </div>
-        <div class="fp-detail-item">
-          <span class="v c-red">${hRound(ferTotGod).toFixed(2)}h</span>
-          <span class="k">Goduto</span>
-          <span class="kd">${(ferTotGod / ORE_GIORNATA).toFixed(1)}g</span>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Ultimo saldo busta</div>
+            <div class="desc">${anchorLabel}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="_obStep=2;_renderOnboarding(true)">Aggiorna</button>
         </div>
-        <div class="fp-detail-item">
-          <span class="v ${ferSaldoH >= 0 ? 'c-amber' : 'c-red'}">${ferSaldoH.toFixed(2)}h</span>
-          <span class="k">Saldo</span>
-          <span class="kd">${ferSaldoG}g</span>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Busta paga ogni mese il</div>
+            <div class="desc">giorno ${profile.bustaGiorno || '—'}</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="fp-summary-card per">
-      <div class="fp-summary-header">
-        <div>
-          <div class="fp-summary-title">${Icons.clock(14)} Permessi</div>
-          <div style="font-size:.7rem;color:var(--text-tertiary);margin-top:4px">${todayLabel}</div>
-        </div>
-        <div class="fp-big-value">
-          <div class="hours ${permSaldoH >= 0 ? 'c-teal' : 'c-red'}">
-            ${permSaldoH >= 0 ? '+' : ''}${permSaldoH.toFixed(2)}h
-          </div>
-          <div class="days-label">${parseFloat(permSaldoG) >= 0 ? '+' : ''}${permSaldoG} giorni</div>
-        </div>
-      </div>
-      <div class="fp-detail-grid">
-        <div class="fp-detail-item">
-          <span class="v c-teal">${hRound(permTotMat).toFixed(2)}h</span>
-          <span class="k">Maturato</span>
-          <span class="kd">${(permTotMat / ORE_GIORNATA).toFixed(1)}g</span>
-        </div>
-        <div class="fp-detail-item">
-          <span class="v c-red">${hRound(permTotGod).toFixed(2)}h</span>
-          <span class="k">Goduto</span>
-          <span class="kd">${(permTotGod / ORE_GIORNATA).toFixed(1)}g</span>
-        </div>
-        <div class="fp-detail-item">
-          <span class="v ${permSaldoH >= 0 ? 'c-teal' : 'c-red'}">${permSaldoH.toFixed(2)}h</span>
-          <span class="k">Saldo</span>
-          <span class="kd">${permSaldoG}g</span>
-        </div>
-      </div>
-    </div>`;
-
-  // ── Tabelle mensili ────────────────────────────────────────
-  const makeTableRows = (type) =>
-    fp.months.map(mo => {
-      const isCurr = mo.y === now.getFullYear() && mo.m === now.getMonth() + 1;
-      const isFer  = type === 'fer';
-      const mat    = isFer ? mo.fMat : mo.pMat;
-      const god    = isFer ? mo.fG   : mo.pG;
-      const sal    = isFer ? mo.fS   : mo.pS;
-      const sc     = sal >= 0 ? (isFer ? 'c-amber' : 'c-teal') : 'c-red';
-      const mc     = isFer ? 'c-amber' : 'c-teal';
-      return `
-        <div class="fp-table-row${isCurr ? ' current-month' : ''}">
-          <span class="month-name">${MI_SHORT[mo.m - 1]} ${mo.y}</span>
-          <span class="cell ${mc}">${hRound(mat).toFixed(2)}h</span>
-          <span class="cell c-red">${hRound(god).toFixed(2)}h</span>
-          <span class="cell saldo ${sc}">${hRound(sal).toFixed(2)}h</span>
-          <span class="cell ${sc}">${(sal / ORE_GIORNATA).toFixed(1)}g</span>
-        </div>`;
-    }).join('');
-
-  const tableHeader = `
-    <div class="fp-table-header">
-      <span>Mese</span><span>Maturato</span><span>Goduto</span><span>Saldo h</span><span>Saldo g</span>
-    </div>`;
-
-  // ── Render finale ──────────────────────────────────────────
-  el.innerHTML = `
-    ${summaryCards}
-    <div class="section-label" style="margin-top:20px">Dettaglio ferie per mese</div>
-    <div class="fp-table-card">${tableHeader}${makeTableRows('fer')}</div>
-    <div class="section-label">Dettaglio permessi per mese</div>
-    <div class="fp-table-card">${tableHeader}${makeTableRows('per')}</div>`;
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   js/views/settings.js — Vista impostazioni
-   Modifica qui: aggiungi nuove opzioni di configurazione, export/import
-   ═══════════════════════════════════════════════════════════════ */
-
-function renderSettings() {
-  const cfg = getConfig();
-  const el  = document.getElementById('view-settings');
-
-  document.getElementById('header-subtitle').textContent = 'Impostazioni';
-
-  el.innerHTML = `
     <div class="settings-section">
-      <div class="settings-section-title">Contratto</div>
+      <div class="settings-section-title">Orario</div>
       <div class="settings-card">
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="label">Ore standard giornaliere</div>
-            <div class="desc">Ore contrattuali per giornata intera</div>
+            <div class="desc">Usato per calcolo scostamento</div>
           </div>
           <input type="time" id="cfg-std" class="time-input"
             value="${cfg.std}" onchange="saveConfig(); renderAll()">
@@ -2636,7 +2701,7 @@ function renderSettings() {
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="label">Elimina tutti i dati</div>
-            <div class="desc">Azione irreversibile — non recuperabile</div>
+            <div class="desc">Cancella tutto e riparte dall'onboarding</div>
           </div>
           <button class="btn btn-danger btn-sm" onclick="clearAll()">Elimina</button>
         </div>
@@ -2651,34 +2716,37 @@ function renderSettings() {
 
 /* ═══════════════════════════════════════════════════════════════
    js/app.js — Controller principale
-   Modifica qui: stato globale, navigazione, export/import, toast
    ═══════════════════════════════════════════════════════════════ */
 
-// ─── STATO GLOBALE ────────────────────────────────────────────
-let cY, cM;       // mese/anno visualizzati nella vista Mese
-let vY;           // anno visualizzato nella vista Anno
-let eKey = null;  // chiave giorno in modifica (YYYY-MM-DD)
+let cY, cM;
+let vY;
+let eKey = null;
 
 // ─── INIT ─────────────────────────────────────────────────────
 function init() {
-  // 1. Migrazione dati da versioni precedenti
   const { migrated, fromVersion } = migrateIfNeeded();
-
-  // 2. Carica/merge SEED (aggiunge solo chiavi mancanti)
   initData();
 
   const now = new Date();
   cY = now.getFullYear();
   cM = now.getMonth() + 1;
   vY = cY;
+
+  // Onboarding al primo avvio
+  if (!isOnboardingDone()) {
+    renderAll();
+    setTimeout(() => showOnboarding(false), 150);
+    return;
+  }
+
   renderAll();
 
-  // 3. Notifica migrazione all'utente
   if (migrated) {
-    setTimeout(() =>
-      showToast(`Dati migrati dalla v${fromVersion} — tutto ok ✓`, 'success'), 600
-    );
+    setTimeout(() => showToast(`Dati migrati — tutto ok ✓`, 'success'), 600);
   }
+
+  // Controlla reminder busta paga
+  setTimeout(checkBustaReminder, 800);
 }
 
 function renderAll() {
@@ -2729,7 +2797,7 @@ function quickSave() {
   };
   saveData(data);
   cY = now.getFullYear(); cM = now.getMonth() + 1;
-  renderAll();
+  renderAll(); // questo fa re-render della quickbar con i default
   showToast('Giornata salvata', 'success');
 }
 
@@ -2757,15 +2825,10 @@ function exportCSV() {
 }
 
 // ─── EXPORT XLSX ──────────────────────────────────────────────
-// xlsx.min.js opzionale: scarica da https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
-// e mettilo in js/xlsx.min.js. Se assente, il tasto usa exportCSV come fallback.
 function exportXLSX() {
-  if (typeof XLSX === 'undefined') {
-    showToast('xlsx.min.js non presente — esporto CSV', '');
-    exportCSV();
-    return;
-  }
+  if (typeof XLSX === 'undefined') { exportCSV(); return; }
   const data = loadData(), cfg = getConfig(), std = t2m(cfg.std) || 480;
+  const contract = getUserContract();
   const rows = [['Data','Giorno','Tipo','Entrata','Usc.Pranzo','Rient.Pranzo','Uscita',
     'Ore Totali','Scostamento','Ore Permesso','Ore Ferie Parz.','Note']];
   Object.keys(data).sort().forEach(k => {
@@ -2776,22 +2839,11 @@ function exportXLSX() {
       dl != null ? m2t(dl, true): '',
       r.po||'', r.fo||'', r.n||'']);
   });
-  const fpRows = [['RIEPILOGO FERIE & PERMESSI'],
-    ['Mese','Res.AP Fer','Mat.Fer','God.Fer','Saldo Fer (h)','Saldo Fer (g)',
-     'Res.AP Per','Mat.Per','God.Per','Saldo Per (h)','Saldo Per (g)']];
-  calcFP(2026, 12, false).months.forEach(x =>
-    fpRows.push([`${MI[x.m-1]} ${x.y}`,
-      hRound(x.fAP).toFixed(2), hRound(x.fMat).toFixed(2), hRound(x.fG).toFixed(2),
-      hRound(x.fS).toFixed(2),  (x.fS  / ORE_GIORNATA).toFixed(2),
-      hRound(x.pAP).toFixed(2), hRound(x.pMat).toFixed(2), hRound(x.pG).toFixed(2),
-      hRound(x.pS).toFixed(2),  (x.pS  / ORE_GIORNATA).toFixed(2)])
-  );
   const wb  = XLSX.utils.book_new();
   const ws1 = XLSX.utils.aoa_to_sheet(rows);
   ws1['!cols'] = [{wch:12},{wch:11},{wch:10},{wch:8},{wch:12},{wch:14},
                   {wch:8},{wch:10},{wch:12},{wch:10},{wch:14},{wch:35}];
   XLSX.utils.book_append_sheet(wb, ws1, 'Presenze');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fpRows), 'Ferie & Permessi');
   XLSX.writeFile(wb, 'presenze.xlsx');
   showToast('Excel esportato', 'success');
 }
@@ -2799,7 +2851,7 @@ function exportXLSX() {
 // ─── IMPORT XLSX ──────────────────────────────────────────────
 function importXLSX(ev) {
   if (typeof XLSX === 'undefined') {
-    showToast('xlsx.min.js non presente — import non disponibile', 'error');
+    showToast('xlsx.min.js non presente', 'error');
     ev.target.value = '';
     return;
   }
@@ -2861,6 +2913,7 @@ document.addEventListener('keydown', e => {
 
 // ─── AVVIO ────────────────────────────────────────────────────
 init();
+
 
 </script>
 
