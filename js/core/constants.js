@@ -1,10 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
    js/core/constants.js — Costanti globali: locale
-   I valori di contratto ora vengono dal profilo utente (onboarding).
+   La versione app viene letta da version.json (unica fonte di verità).
    ═══════════════════════════════════════════════════════════════ */
 
-// ─── VERSIONE APP ─────────────────────────────────────────────
-const APP_VERSION = '1.1.0';
+// ─── VERSIONE APP (caricata da version.json) ──────────────────
+let APP_VERSION = '—';
+fetch('./version.json')
+  .then(r => r.json())
+  .then(({ version }) => { APP_VERSION = version; })
+  .catch(() => {});
 
 // ─── LOCALE ───────────────────────────────────────────────────
 const DI       = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
@@ -14,11 +18,9 @@ const MI       = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
 const MI_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 
 // ─── CONTRATTO (fallback se profilo non configurato) ──────────
-// Questi valori vengono sovrascritti dinamicamente da getUserContract()
 const ORE_GIORNATA = 8;
 
 // ─── HELPERS PROFILO ──────────────────────────────────────────
-/** Restituisce i parametri contrattuali dal profilo utente */
 function getUserContract() {
   const p = loadUserProfile();
   return {
@@ -28,10 +30,6 @@ function getUserContract() {
   };
 }
 
-/**
- * Trova l'anchor più recente (busta paga) precedente o uguale a (toY, toM).
- * Ritorna { data, fer, perm, y, m } oppure null.
- */
 function getLastAnchor(toY, toM) {
   const p = loadUserProfile();
   const buste = (p.bustePagate || []).slice().sort((a,b) => b.data.localeCompare(a.data));
