@@ -86,9 +86,9 @@ function renderMese() {
 
   // ── Quick bar (solo mese corrente) ─────────────────────────
   // I valori di default vengono dall'orario standard configurato
-  const defE  = '08:45';
-  const defUP = '13:00';
-  const defRP = '13:30';
+  const defE  = '00:00';
+  const defUP = '00:00';
+  const defRP = '00:00';
   // Uscita di default calcolata: entrata + ore std + pausa pranzo 30min
   const stdMin   = contract.oreStd * 60;
   const pausaMin = 30;
