@@ -1,7 +1,31 @@
-/* ═══════════════════════════════════════════════════════════════
-   js/components/modal.js — Modal modifica giornata
+/* js/components/modal.js — Modal modifica giornata
    Modifica qui: campi del form, validazione, salvataggio
    ═══════════════════════════════════════════════════════════════ */
+
+/** Converte input "30" → 0.5h | "1:30" → 1.5h, arrotonda a mezz'ora */
+function parsePermInput(raw) {
+  if (!raw || raw.trim() === '') return 0;
+  raw = raw.trim();
+  let totalMinutes;
+  if (raw.includes(':')) {
+    const [h, m] = raw.split(':').map(s => parseInt(s, 10) || 0);
+    totalMinutes = h * 60 + m;
+  } else {
+    const n = parseInt(raw, 10) || 0;
+    totalMinutes = n <= 12 ? n * 60 : n;
+  }
+  const rounded = Math.round(totalMinutes / 30) * 30;
+  return rounded / 60;
+}
+
+/** Converte ore decimali in stringa leggibile: 1.5 → "1:30", 0.5 → "30" */
+function decimalToHHMM(dec) {
+  if (!dec || dec <= 0) return '';
+  const totalMin = Math.round(dec * 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}` : `${m}`;
+}
 
 /** Apre il modal per la data con chiave key (YYYY-MM-DD) */
 function openModal(key) {
@@ -17,8 +41,8 @@ function openModal(key) {
   document.getElementById('m-rp').value   = r.rp  || '';
   document.getElementById('m-u').value    = r.u   || '';
   document.getElementById('m-note').value = r.n   || '';
-  document.getElementById('m-perm').value = r.po  || '';
-  document.getElementById('m-fer').value  = r.fo  || '';
+  document.getElementById('m-perm').value = decimalToHHMM(r.po);
+  document.getElementById('m-fer').value  = '0';
 
   onTipo();
   document.getElementById('modal-overlay').classList.add('open');
@@ -59,10 +83,8 @@ function saveDay() {
       if (up) r.up = up;
       if (rp) r.rp = rp;
       if (u)  r.u  = u;
-      const po = parseFloat(document.getElementById('m-perm').value);
-      const fo = parseFloat(document.getElementById('m-fer').value);
+      const po = parsePermInput(document.getElementById('m-perm').value);
       if (po > 0) r.po = po;
-      if (fo > 0) r.fo = fo;
     }
     const n = document.getElementById('m-note').value.trim();
     if (n) r.n = n;
@@ -85,3 +107,5 @@ function delDay() {
   renderAll();
   showToast('Eliminato');
 }
+
+/* ═══════════════════════════════════════════════════════════════ */

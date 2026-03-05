@@ -1,7 +1,11 @@
-/* ═══════════════════════════════════════════════════════════════
-   js/core/engine.js — Calcoli business logic
+/* js/core/engine.js — Calcoli business logic
    Usa il profilo utente per ferie/permessi invece di costanti hardcoded.
    ═══════════════════════════════════════════════════════════════ */
+
+/** Arrotonda i minuti alla mezz'ora più vicina (es. 47→30, 48→60) */
+function roundToHalfHour(minutes) {
+  return Math.round(minutes / 30) * 30;
+}
 
 function oreG(r) {
   if (!r || r.t !== 'Lavoro') return null;
@@ -9,13 +13,13 @@ function oreG(r) {
   if (e == null || u == null) return null;
   let tot = u - e;
   if (up != null && rp != null) tot -= (rp - up);
-  return tot;
+  return tot; // minuti esatti, nessun arrotondamento
 }
 
 function dltG(r, std) {
   const o = oreG(r);
   if (o == null) return null;
-  return o - std;
+  return o - std; // minuti esatti
 }
 
 function godutoMese(y, m, upToDay, data) {
@@ -89,3 +93,6 @@ function calcFP(toY, toM, toToday = false) {
 
   return { fS, pS, months };
 }
+
+
+/* ═══════════════════════════════════════════════════════════════ */

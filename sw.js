@@ -5,7 +5,7 @@
    • Aggiorna APP_VERSION qui ogni volta che fai un rilascio
    ═══════════════════════════════════════════════════════════════ */
 
-const APP_VERSION  = '0.0.6';
+const APP_VERSION  = '0.0.7';
 const CACHE_NAME   = `presenze-v${APP_VERSION}`;
 
 // ─── FILE DA METTERE IN CACHE ─────────────────────────────────
