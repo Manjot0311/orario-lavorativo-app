@@ -67,13 +67,13 @@ function renderMese() {
       const lbl = cur.partial
         ? `ad oggi ${now.getDate()} ${MI_SHORT[cM - 1]}`
         : 'fine mese';
-      fpHtml = `<div class="fp-grid">
+      fpHtml = `<div class="fp-stack">
         ${renderFPCard('fer', lbl, cur.fAP, cur.fMat, cur.fG, cur.fS)}
         ${renderFPCard('per', lbl, cur.pAP, cur.pMat, cur.pG, cur.pS)}
       </div>`;
     } else if (fp.months.length === 0) {
       // Mese uguale o precedente all'anchor — mostra saldo anchor
-      fpHtml = `<div class="fp-grid">
+      fpHtml = `<div class="fp-stack">
         ${renderFPCard('fer', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.fer, true)}
         ${renderFPCard('per', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.perm, true)}
       </div>`;

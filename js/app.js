@@ -6,8 +6,18 @@ let cY, cM;
 let vY;
 let eKey = null;
 
+// ─── SPLASH SCREEN ────────────────────────────────────────────
+function hideSplash() {
+  const splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  splash.classList.add('splash-hide');
+  setTimeout(() => splash.remove(), 500);
+}
+
 // ─── INIT ─────────────────────────────────────────────────────
 function init() {
+  // Nascondi splash dopo 1.6s (abbastanza per vedere il logo)
+  setTimeout(hideSplash, 1600);
   const { migrated, fromVersion } = migrateIfNeeded();
   initData();
 

@@ -5,18 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Work Time">
+  <meta name="apple-mobile-web-app-title" content="Timely">
   <meta name="theme-color" content="#f5f4f0">
-  <title>Work Time</title>
+  <title>Timely</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/views.css">
+  <style>
+    /* ── Splash Screen ─────────────────────────────────────── */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background: #f5f4f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #splash-screen.splash-hide {
+      opacity: 0;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: splashIn 0.5s ease both;
+    }
+    @keyframes splashIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .splash-logo {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .splash-name {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #1a1a1a;
+    }
+    .splash-tagline {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.85rem;
+      color: #888;
+      letter-spacing: 0.02em;
+    }
+  </style>
 </head>
 <body>
+
+<!-- ── SPLASH SCREEN ──────────────────────────────────────── -->
+<div id="splash-screen">
+  <div class="splash-content">
+    <img src="assets/web-app-manifest-192x192.png" alt="Timely" class="splash-logo">
+    <div class="splash-name">Timely</div>
+    <div class="splash-tagline">Track your work, simply.</div>
+  </div>
+</div>
 
 <div id="app">
 
@@ -34,7 +93,7 @@
     <!-- ── HEADER ─────────────────────────────────────────── -->
     <header id="header">
       <div class="header-left">
-        <span class="app-title">Work Time</span>
+        <span class="app-title">Timely</span>
         <span class="header-subtitle" id="header-subtitle"></span>
       </div>
       <div class="header-right">
@@ -161,11 +220,18 @@
           </div>
           <div class="absence-section" id="modal-absence-section">
             <div class="absence-title">Assenze parziali</div>
-            <div class="field-group">
-              <label class="field-label">Permesso goduto</label>
-              <input type="text" id="m-perm" class="field-input" placeholder="es. 30 oppure 1:30" maxlength="5" inputmode="numeric">
-              <p class="field-hint">Inserisci minuti (es. <strong>30</strong>) oppure ore e minuti (es. <strong>1:30</strong>). Arrotondato alla mezz'ora più vicina.</p>
+            <div class="perm-two-fields">
+              <div class="field-group">
+                <label class="field-label">Ore</label>
+                <input type="number" id="m-perm-h" class="field-input" min="0" max="8" placeholder="0" inputmode="numeric">
+              </div>
+              <div class="perm-two-sep">:</div>
+              <div class="field-group">
+                <label class="field-label">Minuti</label>
+                <input type="number" id="m-perm-m" class="field-input" min="0" max="59" placeholder="0" inputmode="numeric">
+              </div>
             </div>
+            <input type="hidden" id="m-perm" value="">
             <input type="hidden" id="m-fer" value="0">
           </div>
         </div>
