@@ -65,6 +65,16 @@ function _obStep1(body, fromSettings) {
       </div>
 
       <div class="field-group">
+        <label class="field-label">Pausa pranzo minima</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" id="ob-pausa-pranzo" class="field-input" step="5" min="0" max="120"
+            value="${cfg.pausaPranzoMin ?? 30}" placeholder="30" style="max-width:100px">
+          <span class="field-hint" style="margin-top:0">minuti</span>
+        </div>
+        <div class="field-hint">Durata minima della pausa pranzo — usata per calcolare l'uscita automatica (es. 30 min)</div>
+      </div>
+
+      <div class="field-group">
         <label class="field-label">Giorno di ricezione busta paga</label>
         <input type="number" id="ob-busta-giorno" class="field-input" step="1" min="1" max="31"
           value="${cfg.bustaGiorno || ''}" placeholder="Es. 27">
@@ -81,21 +91,24 @@ function _obStep1(body, fromSettings) {
 }
 
 function _obNext1(fromSettings) {
-  const oreStd      = parseFloat(document.getElementById('ob-ore-std').value);
-  const ferMese     = parseFloat(document.getElementById('ob-fer-mat').value);
-  const permMese    = parseFloat(document.getElementById('ob-perm-mat').value);
-  const bustaGiorno = parseInt(document.getElementById('ob-busta-giorno').value);
+  const oreStd       = parseFloat(document.getElementById('ob-ore-std').value);
+  const ferMese      = parseFloat(document.getElementById('ob-fer-mat').value);
+  const permMese     = parseFloat(document.getElementById('ob-perm-mat').value);
+  const bustaGiorno  = parseInt(document.getElementById('ob-busta-giorno').value);
+  const pausaPranzoMin = parseInt(document.getElementById('ob-pausa-pranzo').value);
 
   if (!oreStd || oreStd < 1)     return _obError('Inserisci le ore giornaliere');
   if (!ferMese || ferMese < 0)   return _obError('Inserisci le ferie mensili');
   if (!permMese || permMese < 0) return _obError('Inserisci i permessi mensili');
   if (!bustaGiorno || bustaGiorno < 1 || bustaGiorno > 31) return _obError('Inserisci un giorno valido (1–31)');
+  if (isNaN(pausaPranzoMin) || pausaPranzoMin < 0) return _obError('Inserisci una pausa pranzo valida (in minuti)');
 
   const profile = loadUserProfile();
-  profile.oreStd      = oreStd;
-  profile.ferMese     = ferMese;
-  profile.permMese    = permMese;
-  profile.bustaGiorno = bustaGiorno;
+  profile.oreStd        = oreStd;
+  profile.ferMese       = ferMese;
+  profile.permMese      = permMese;
+  profile.bustaGiorno   = bustaGiorno;
+  profile.pausaPranzoMin = pausaPranzoMin;
   saveUserProfile(profile);
 
   _obStep = 2;
@@ -238,6 +251,10 @@ function _obStep3(body, fromSettings) {
       <div class="ob-recap-row">
         <span>Busta paga ogni mese il</span>
         <strong>giorno ${cfg.bustaGiorno}</strong>
+      </div>
+      <div class="ob-recap-row">
+        <span>Pausa pranzo minima</span>
+        <strong>${cfg.pausaPranzoMin ?? 30} min</strong>
       </div>
       <div class="ob-recap-section">Saldi di partenza — busta ${meseBusta}</div>
       <div class="ob-recap-row">

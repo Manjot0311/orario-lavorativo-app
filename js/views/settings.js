@@ -59,6 +59,20 @@ function renderSettings() {
           <input type="time" id="cfg-std" class="time-input"
             value="${cfg.std}" onchange="saveConfig(); renderAll()">
         </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="label">Pausa pranzo minima</div>
+            <div class="desc">Usata per calcolo automatico orari</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="cfg-pausa-pranzo" class="time-input"
+              style="width:64px;text-align:center"
+              step="5" min="0" max="120"
+              value="${profile.pausaPranzoMin ?? 30}"
+              onchange="savePausaPranzo(); renderAll()">
+            <span style="font-size:.8rem;color:var(--text-secondary)">min</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -99,4 +113,13 @@ function renderSettings() {
     <div class="settings-footer">
       Work Time · v${APP_VERSION} · dati salvati localmente sul dispositivo
     </div>`;
+}
+
+function savePausaPranzo() {
+  const el  = document.getElementById('cfg-pausa-pranzo');
+  const val = el ? parseInt(el.value) : 30;
+  if (isNaN(val) || val < 0) return;
+  const profile = loadUserProfile();
+  profile.pausaPranzoMin = val;
+  saveUserProfile(profile);
 }

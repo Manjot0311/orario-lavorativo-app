@@ -85,26 +85,16 @@ function renderMese() {
   }
 
   // ── Quick bar (solo mese corrente) ─────────────────────────
-  // I valori di default vengono dall'orario standard configurato
-  const defE  = '00:00';
-  const defUP = '00:00';
-  const defRP = '00:00';
-  // Uscita di default calcolata: entrata + ore std + pausa pranzo 30min
-  const stdMin   = contract.oreStd * 60;
-  const pausaMin = 30;
-  const uscitaM  = t2m(defE) + stdMin + pausaMin;
-  const defU     = m2t(uscitaM).replace('+','');
-
   const qbarHtml = isNow ? `
     <div class="quick-bar">
       <div class="quick-bar-label">
         Inserimento rapido — ${DI[now.getDay()]}, ${now.getDate()} ${MI[now.getMonth()]} ${now.getFullYear()}
       </div>
       <div class="quick-inputs">
-        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e" value="${defE}"></div>
-        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="${defUP}"></div>
-        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="${defRP}"></div>
-        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u" value="${defU}"></div>
+        <div class="quick-field"><label>Entrata</label><input type="time" id="q-e"  value="00:00" onchange="qCalcUscita()"></div>
+        <div class="quick-field"><label>Usc. Pranzo</label><input type="time" id="q-up" value="00:00" onchange="qCalcRientro()"></div>
+        <div class="quick-field"><label>Rient. Pr.</label><input type="time" id="q-rp" value="00:00" onchange="qCalcUscita()"></div>
+        <div class="quick-field"><label>Uscita</label><input type="time" id="q-u"  value="00:00"></div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="quickSave()">Salva oggi</button>
     </div>` : '';
@@ -204,4 +194,72 @@ function renderMese() {
     ${fpHtml}
     <div class="section-label">Registro presenze</div>
     ${weeksHtml}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Quick bar — calcoli automatici
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Converte "HH:MM" → minuti. Ritorna null se "00:00" o vuoto. */
+function _qParse(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.value || el.value === '00:00') return null;
+  return t2m(el.value);
+}
+
+/** Formatta minuti → "HH:MM" e li imposta nell'input. */
+function _qSet(id, minuti) {
+  const el = document.getElementById(id);
+  if (!el || minuti == null || minuti < 0) return;
+  const clamped = Math.min(minuti, 23 * 60 + 59);
+  const hh = String(Math.floor(clamped / 60)).padStart(2, '0');
+  const mm = String(clamped % 60).padStart(2, '0');
+  el.value = `${hh}:${mm}`;
+}
+
+/**
+ * Ricalcola "Uscita" quando cambia Entrata o Rientro Pranzo.
+ *
+ * Caso A (senza rientro pranzo):
+ *   Uscita = Entrata + oreStd + pausaPranzoMin
+ *
+ * Caso B (con rientro pranzo):
+ *   orePrePranzo = uscitaPranzo − entrata  (se disponibile, altrimenti 0)
+ *   oreRimanenti = max(0, oreStd − orePrePranzo)
+ *   Uscita       = Rientro + oreRimanenti
+ */
+function qCalcUscita() {
+  const contract    = getUserContract();
+  const pausaMin    = getPausaPranzoMin();
+  const stdMin      = Math.round(contract.oreStd * 60);
+
+  const entrata     = _qParse('q-e');
+  const uscPranzo   = _qParse('q-up');
+  const rientPranzo = _qParse('q-rp');
+
+  if (entrata == null) return;
+
+  let uscita;
+  if (rientPranzo != null) {
+    const orePrePranzo = (uscPranzo != null && uscPranzo > entrata)
+      ? uscPranzo - entrata : 0;
+    const oreRimanenti = Math.max(0, stdMin - orePrePranzo);
+    uscita = rientPranzo + oreRimanenti;
+  } else {
+    uscita = entrata + stdMin + pausaMin;
+  }
+
+  _qSet('q-u', uscita);
+}
+
+/**
+ * Ricalcola "Rientro Pranzo" quando cambia "Uscita Pranzo",
+ * poi ricalcola l'uscita di conseguenza.
+ */
+function qCalcRientro() {
+  const pausaMin  = getPausaPranzoMin();
+  const uscPranzo = _qParse('q-up');
+  if (uscPranzo == null) return;
+  _qSet('q-rp', uscPranzo + pausaMin);
+  qCalcUscita();
 }

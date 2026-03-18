@@ -32,6 +32,14 @@ function loadUserProfile() {
 function saveUserProfile(p) { localStorage.setItem(PK, JSON.stringify(p)); }
 function isOnboardingDone() { return !!loadUserProfile().onboardingDone; }
 
+/** Ritorna la pausa pranzo minima in minuti (default 30) */
+function getPausaPranzoMin() {
+  const p = loadUserProfile();
+  return (typeof p.pausaPranzoMin === 'number' && p.pausaPranzoMin > 0)
+    ? p.pausaPranzoMin
+    : 30;
+}
+
 function backupData(fromVersion, data, config) {
   try {
     localStorage.setItem(BK_PRE + fromVersion, JSON.stringify({
