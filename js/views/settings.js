@@ -102,6 +102,13 @@ function renderSettings() {
       <div class="settings-card">
         <div class="settings-row">
           <div class="settings-row-info">
+            <div class="label">Disattiva dispositivo</div>
+            <div class="desc">Rimuove la licenza da questo dispositivo</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deactivateLicense()">Disattiva</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
             <div class="label">Elimina tutti i dati</div>
             <div class="desc">Cancella tutto e riparte dall'onboarding</div>
           </div>
@@ -122,4 +129,10 @@ function savePausaPranzo() {
   const profile = loadUserProfile();
   profile.pausaPranzoMin = val;
   saveUserProfile(profile);
+}
+
+function deactivateLicense() {
+  if (!confirm('Rimuovere la licenza da questo dispositivo?\nDovrai inserire un codice di attivazione al prossimo avvio.')) return;
+  localStorage.removeItem('timely_license_v1');
+  location.reload();
 }

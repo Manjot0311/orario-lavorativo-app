@@ -1,0 +1,166 @@
+/* ═══════════════════════════════════════════════════════════════
+   css/license.css — Schermata di attivazione licenza
+   Coerente con l'estetica di Timely (base.css)
+   ═══════════════════════════════════════════════════════════════ */
+
+#activation-overlay {
+  position: fixed;
+  inset: 0;
+  background: #f5f4f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 24px;
+  animation: actFadeIn 0.4s ease both;
+}
+
+@keyframes actFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#activation-overlay.act-success {
+  animation: actSuccess 0.4s ease both;
+}
+
+@keyframes actSuccess {
+  0%   { opacity: 1; transform: scale(1); }
+  50%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0; transform: scale(0.98); }
+}
+
+.act-card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  animation: actCardIn 0.5s cubic-bezier(.22,.8,.36,1) both;
+}
+
+@keyframes actCardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.act-logo {
+  margin-bottom: 16px;
+}
+
+.act-logo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+}
+
+.act-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.act-subtitle {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0 0 32px 0;
+}
+
+.act-field-wrap {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.act-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1.5px solid #e0ddd7;
+  border-radius: 12px;
+  background: #fff;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #1a1a1a;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.act-input:focus {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26,26,26,0.08);
+}
+
+.act-input::placeholder {
+  color: #ccc;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+@keyframes actShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.act-shake {
+  animation: actShake 0.4s ease;
+  border-color: #e05252 !important;
+}
+
+.act-error {
+  min-height: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.82rem;
+  color: #e05252;
+  text-align: center;
+  margin-bottom: 16px;
+  transition: opacity 0.2s;
+}
+
+.act-btn {
+  width: 100%;
+  padding: 15px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, opacity 0.2s;
+  letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+
+.act-btn:active {
+  transform: scale(0.98);
+}
+
+.act-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.act-help {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.78rem;
+  color: #bbb;
+  text-align: center;
+  margin: 0;
+}
