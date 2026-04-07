@@ -18,16 +18,13 @@ function hideSplash() {
 async function init() {
   // Controlla licenza PRIMA di tutto
   if (!isActivated()) {
-    // Mostra splash brevemente, poi schermata attivazione
     await new Promise(r => setTimeout(r, 800));
     hideSplash();
     await showActivationScreen();
-    // Dopo attivazione, ricarica per partire puliti
     location.reload();
     return;
   }
 
-  // Nascondi splash dopo 1.6s (abbastanza per vedere il logo)
   setTimeout(hideSplash, 1600);
   const { migrated, fromVersion } = migrateIfNeeded();
   initData();
@@ -36,6 +33,9 @@ async function init() {
   cY = now.getFullYear();
   cM = now.getMonth() + 1;
   vY = cY;
+
+  // ── Festivi italiani: pre-compila anno corrente ± 1 ────────
+  seedHolidaysRange(cY, 1);
 
   // Onboarding al primo avvio
   if (!isOnboardingDone()) {
@@ -79,6 +79,8 @@ function chMonth(d) {
   cM += d;
   if (cM > 12) { cM = 1; cY++; }
   if (cM < 1)  { cM = 12; cY--; }
+  // Quando si naviga verso un nuovo anno, assicura i festivi ──
+  seedHolidaysRange(cY, 1);
   renderMese();
 }
 

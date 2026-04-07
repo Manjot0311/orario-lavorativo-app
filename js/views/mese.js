@@ -12,7 +12,7 @@ function renderMese() {
   const isNow    = cY === now.getFullYear() && cM === now.getMonth() + 1;
   const el       = document.getElementById('view-mese');
 
-  // Header subtitle: solo mese e anno (non ripete "Presenze")
+  // Header subtitle: solo mese e anno
   document.getElementById('header-subtitle').textContent = `${MI[cM - 1]} ${cY}`;
 
   // ── Statistiche mensili ────────────────────────────────────
@@ -72,7 +72,6 @@ function renderMese() {
         ${renderFPCard('per', lbl, cur.pAP, cur.pMat, cur.pG, cur.pS)}
       </div>`;
     } else if (fp.months.length === 0) {
-      // Mese uguale o precedente all'anchor — mostra saldo anchor
       fpHtml = `<div class="fp-stack">
         ${renderFPCard('fer', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.fer, true)}
         ${renderFPCard('per', `busta ${MI_SHORT[anchor.m-1]}`, 0, 0, 0, anchor.perm, true)}
@@ -119,7 +118,10 @@ function renderMese() {
       const o       = oreG(r);
       const dl      = dltG(r, std);
       const isToday = dk(y, m, d) === todayKey;
-      const tipo    = we ? 'Weekend' : (r?.t || '');
+
+      // ── Festivo automatico ─────────────────────────────────
+      const isAutoHoliday = !we && r?._auto === true && r?.t === 'Festivo';
+      const tipo = we ? 'Weekend' : (r?.t || '');
 
       const badgeMap = { Lavoro:'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
                          Malattia:'badge-malattia', Permesso:'badge-permesso' };
@@ -127,9 +129,10 @@ function renderMese() {
 
       const rowClass = [
         'day-row',
-        we      ? 'weekend'       : '',
-        isToday ? 'today'         : '',
-        om      ? 'other-month'   : '',
+        we            ? 'weekend'        : '',
+        isToday       ? 'today'          : '',
+        om            ? 'other-month'    : '',
+        isAutoHoliday ? 'auto-holiday'   : '',
         r?.t === 'Ferie'    ? 'ferie-row'    : '',
         r?.t === 'Permesso' ? 'permesso-row' : ''
       ].filter(Boolean).join(' ');
@@ -139,7 +142,8 @@ function renderMese() {
         : `<strong>${d}</strong> <span style="color:var(--text-tertiary);font-size:.7rem">${DI_SHORT[date.getDay()]}</span>`;
 
       const timesStr = r?.e ? `${r.e}→${r.u || '?'}` : '';
-      const noteStr  = r?.n || '';
+      // Per i festivi auto, mostriamo il nome della festività come nota
+      const noteStr  = isAutoHoliday ? (r.n || '') : (r?.n || '');
 
       let absStr = '';
       if (r?.po) absStr += `<span class="c-teal">${parseFloat(r.po).toFixed(2)}h P</span> `;
@@ -148,14 +152,20 @@ function renderMese() {
       const deltaClass = dl == null ? '' : dl > 0 ? 'pos' : dl < 0 ? 'neg' : 'zer';
       const deltaHtml  = dl != null ? `<div class="day-delta ${deltaClass}">${m2t(dl, true)}</div>` : '';
 
+      // I festivi automatici sono comunque cliccabili (modificabili)
       const clickAttr = we ? ''
         : om ? `onclick="cY=${y};cM=${m};renderMese()"`
              : `onclick="openModal('${dk(y, m, d)}')"`;
 
+      // Icona festivo automatico
+      const autoIcon = isAutoHoliday
+        ? `<span class="auto-holiday-icon" title="Festivo nazionale automatico">🇮🇹</span>`
+        : '';
+
       return `
         <div class="${rowClass}" ${clickAttr}>
           <div class="day-date">${dateLabel}</div>
-          <div>${tipo && !we ? `<span class="badge ${badgeCls}">${tipo}</span>` : ''}</div>
+          <div>${tipo && !we ? `<span class="badge ${badgeCls}">${tipo}</span>${autoIcon}` : ''}</div>
           <div class="day-center">
             ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · '+absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
             ${noteStr  ? `<div class="day-note">${noteStr}</div>` : ''}
@@ -200,14 +210,12 @@ function renderMese() {
    Quick bar — calcoli automatici
    ═══════════════════════════════════════════════════════════════ */
 
-/** Converte "HH:MM" → minuti. Ritorna null se "00:00" o vuoto. */
 function _qParse(id) {
   const el = document.getElementById(id);
   if (!el || !el.value || el.value === '00:00') return null;
   return t2m(el.value);
 }
 
-/** Formatta minuti → "HH:MM" e li imposta nell'input. */
 function _qSet(id, minuti) {
   const el = document.getElementById(id);
   if (!el || minuti == null || minuti < 0) return;
@@ -217,17 +225,6 @@ function _qSet(id, minuti) {
   el.value = `${hh}:${mm}`;
 }
 
-/**
- * Ricalcola "Uscita" quando cambia Entrata o Rientro Pranzo.
- *
- * Caso A (senza rientro pranzo):
- *   Uscita = Entrata + oreStd + pausaPranzoMin
- *
- * Caso B (con rientro pranzo):
- *   orePrePranzo = uscitaPranzo − entrata  (se disponibile, altrimenti 0)
- *   oreRimanenti = max(0, oreStd − orePrePranzo)
- *   Uscita       = Rientro + oreRimanenti
- */
 function qCalcUscita() {
   const contract    = getUserContract();
   const pausaMin    = getPausaPranzoMin();
@@ -252,10 +249,6 @@ function qCalcUscita() {
   _qSet('q-u', uscita);
 }
 
-/**
- * Ricalcola "Rientro Pranzo" quando cambia "Uscita Pranzo",
- * poi ricalcola l'uscita di conseguenza.
- */
 function qCalcRientro() {
   const pausaMin  = getPausaPranzoMin();
   const uscPranzo = _qParse('q-up');

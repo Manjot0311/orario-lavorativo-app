@@ -118,7 +118,7 @@ function renderSettings() {
     </div>
 
     <div class="settings-footer">
-      Work Time · v${APP_VERSION} · dati salvati localmente sul dispositivo
+      Timely · Dati salvati localmente sul dispositivo
     </div>`;
 }
 

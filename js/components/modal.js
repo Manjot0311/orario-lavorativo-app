@@ -23,12 +23,38 @@ function openModal(key) {
   const [y, m, d] = key.split('-').map(Number);
   const dw = new Date(y, m - 1, d).getDay();
 
+  // Banner informativo per i festivi automatici
+  const modalHeader = document.querySelector('.modal-header');
+  const existingBanner = document.getElementById('modal-auto-holiday-banner');
+  if (existingBanner) existingBanner.remove();
+
+  if (r._auto && r.t === 'Festivo') {
+    const banner = document.createElement('div');
+    banner.id = 'modal-auto-holiday-banner';
+    banner.style.cssText = `
+      background: var(--bg-secondary, #f5f4f0);
+      border-left: 3px solid var(--c-festivo, #e07b39);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 0 0 12px 0;
+      font-size: .78rem;
+      color: var(--text-secondary, #666);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    banner.innerHTML = `<span>🇮🇹</span><span>Festivo nazionale — <strong>${r.n || 'festività'}</strong>. Modificabile se hai lavorato.</span>`;
+    const modalBody = document.querySelector('.modal-body');
+    modalBody.insertBefore(banner, modalBody.firstChild);
+  }
+
   document.getElementById('modal-date').textContent = `${DI[dw]}, ${d} ${MI[m - 1]} ${y}`;
   document.getElementById('m-tipo').value  = r.t  || '';
   document.getElementById('m-e').value    = r.e   || '';
   document.getElementById('m-up').value   = r.up  || '';
   document.getElementById('m-rp').value   = r.rp  || '';
   document.getElementById('m-u').value    = r.u   || '';
+  // Per i festivi auto, mostriamo il nome della festività nel campo note
   document.getElementById('m-note').value = r.n   || '';
   document.getElementById('m-fer').value  = '0';
   loadPermFields(r.po || 0);
@@ -49,6 +75,10 @@ function onTipo() {
 
 /** Chiude il modal */
 function closeModal() {
+  // Rimuovi banner auto-holiday se presente
+  const banner = document.getElementById('modal-auto-holiday-banner');
+  if (banner) banner.remove();
+
   document.getElementById('modal-overlay').classList.remove('open');
   eKey = null;
 }
@@ -77,6 +107,8 @@ function saveDay() {
     }
     const n = document.getElementById('m-note').value.trim();
     if (n) r.n = n;
+    // NON propaghiamo _auto: l'utente ha scelto esplicitamente,
+    // quindi questo giorno non è più "automatico"
     data[eKey] = r;
   }
 
@@ -90,6 +122,24 @@ function saveDay() {
 function delDay() {
   if (!eKey) return;
   const data = loadData();
+
+  // Se era un festivo automatico e l'utente lo "elimina",
+  // lo ripristiniamo come festivo auto (reset al default)
+  const existing = data[eKey];
+  if (existing?._auto) {
+    // Recupera il nome dal dizionario festivi
+    const [y] = eKey.split('-').map(Number);
+    const holidays = getItalianHolidays(y);
+    if (holidays[eKey]) {
+      data[eKey] = { t: 'Festivo', n: holidays[eKey], _auto: true };
+      saveData(data);
+      closeModal();
+      renderAll();
+      showToast('Ripristinato a festivo nazionale');
+      return;
+    }
+  }
+
   delete data[eKey];
   saveData(data);
   closeModal();
