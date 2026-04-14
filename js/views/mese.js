@@ -16,19 +16,21 @@ function renderMese() {
   document.getElementById('header-subtitle').textContent = `${MI[cM - 1]} ${cY}`;
 
   // ── Statistiche mensili ────────────────────────────────────
-  let totO = 0, ggL = 0, str = 0, deb = 0, ferD = 0, malD = 0, permD = 0;
+  let ggL = 0, str = 0, deb = 0, ferD = 0, malD = 0, permD = 0;
   for (let d = 1; d <= dim(cY, cM); d++) {
     const r = data[dk(cY, cM, d)];
     if (!r) continue;
     const o = oreG(r), dl = dltG(r, std);
     if (r.t === 'Lavoro' && o != null) {
-      totO += o; ggL++;
+      ggL++;
       if (dl > 0) str += dl; else if (dl < 0) deb += dl;
     }
     if (r.t === 'Ferie')    ferD++;
     if (r.t === 'Malattia') malD++;
     if (r.t === 'Permesso') permD++;
   }
+  // Ore lavorate = giorni lavorati × ore standard contrattuali (in minuti)
+  const totO = ggL * contract.oreStd * 60;
   const saldo = str + deb;
 
   // ── Stat cards ─────────────────────────────────────────────
@@ -104,11 +106,15 @@ function renderMese() {
 
   const weeksHtml = weeks.map(wk => {
     const isCur = wk.wn === todayWn && wk.wy === todayWy;
-    let wO = 0, wDl = 0;
+    let wGg = 0, wDl = 0, wO = 0;  // wO in minuti, calcolato giorno per giorno
     wk.days.filter(x => !x.om).forEach(({ y, m, d }) => {
       const r = data[dk(y, m, d)];
       const o = oreG(r), dl = dltG(r, std);
-      if (o != null) { wO += o; wDl += dl || 0; }
+      if (o != null) {
+        wGg++;                        // conta il giorno lavorato
+        wDl += dl || 0;               // accumula il saldo (extra/deficit)
+        wO  += Math.min(o, std);      // ore ordinarie: al massimo le std contrattuali
+      }
     });
     const extraMonths = [...new Set(wk.days.filter(x => x.om).map(x => MI_SHORT[x.m - 1]))].join(', ');
 
