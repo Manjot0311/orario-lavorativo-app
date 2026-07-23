@@ -1,5 +1,6 @@
 /* js/views/ferie.js — Vista ferie & permessi
-   Modifica qui: storico mensile FP, saldo progressivo, riepilogo
+   Saldo attuale (ferie+permessi in un'unica card a due colonne,
+   stesso linguaggio visivo dello storico sotto) + storico mensile
    ═══════════════════════════════════════════════════════════════ */
 
 function renderFerie() {
@@ -33,7 +34,7 @@ function renderFerie() {
   const last     = fp.months[fp.months.length - 1];
   const contract = getUserContract();
 
-  // ── Riepilogo attuale ──────────────────────────────────────
+  // ── Riepilogo attuale — una card, due colonne ────────────────
   let summaryHtml = '';
   if (last) {
     const lbl     = last.partial
@@ -46,86 +47,47 @@ function renderFerie() {
 
     summaryHtml = `
       <div class="section-label">Saldo attuale</div>
-      <div class="fp-summary-card fer">
-        <div class="fp-summary-header">
-          <div class="fp-summary-title">☀️ Ferie</div>
+      <div class="month-card-fp current">
+        <div class="month-card-fp-header">
+          <span class="month-card-fp-title">Saldo — ${MI[toM - 1]} ${toY}</span>
           <span class="fp-badge">${lbl}</span>
         </div>
-        <div class="fp-summary-rows">
-          <div class="fp-summary-row">
-            <span class="k">Residuo anno prec.</span>
-            <span class="v">${h2display(last.fAP)}</span>
+        <div class="month-card-fp-body">
+          <div class="month-fp-col fer">
+            <div class="month-fp-col-title">☀️ Ferie</div>
+            <div class="month-fp-row"><span class="k">Residuo A.P.</span><span class="v">${h2display(last.fAP)}</span></div>
+            <div class="month-fp-row"><span class="k">Maturato</span><span class="v c-amber">+${h2display(last.fMat)}</span></div>
+            <div class="month-fp-row"><span class="k">Goduto</span><span class="v c-red">${last.fG > 0 ? '−' : ''}${h2display(last.fG)}</span></div>
+            <div class="month-fp-row total"><span class="k">Saldo</span><span class="v ${fSColor} large">${fSign}${h2display(last.fS)}</span></div>
+            <div class="month-fp-row"><span class="k"></span><span class="v ${fSColor}">${fSign}${h2days(last.fS, contract.oreStd)} giorni</span></div>
           </div>
-          <div class="fp-summary-row">
-            <span class="k">Maturato</span>
-            <span class="v c-amber">+${h2display(last.fMat)}</span>
-          </div>
-          <div class="fp-summary-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${last.fG > 0 ? '−' : ''}${h2display(last.fG)}</span>
-          </div>
-          <div class="fp-summary-row total">
-            <span class="k">Saldo ore</span>
-            <span class="v ${fSColor}">${fSign}${h2display(last.fS)}</span>
-          </div>
-          <div class="fp-summary-row days">
-            <span class="k">Saldo giorni</span>
-            <span class="v ${fSColor} large">${fSign}${h2days(last.fS, contract.oreStd)}</span>
-          </div>
-        </div>
-      </div>
-      <div class="fp-summary-card per">
-        <div class="fp-summary-header">
-          <div class="fp-summary-title">🕐 Permessi</div>
-          <span class="fp-badge">${lbl}</span>
-        </div>
-        <div class="fp-summary-rows">
-          <div class="fp-summary-row">
-            <span class="k">Residuo anno prec.</span>
-            <span class="v">${h2display(last.pAP)}</span>
-          </div>
-          <div class="fp-summary-row">
-            <span class="k">Maturato</span>
-            <span class="v c-teal">+${h2display(last.pMat)}</span>
-          </div>
-          <div class="fp-summary-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${last.pG > 0 ? '−' : ''}${h2display(last.pG)}</span>
-          </div>
-          <div class="fp-summary-row total">
-            <span class="k">Saldo ore</span>
-            <span class="v ${pSColor}">${pSign}${h2display(last.pS)}</span>
-          </div>
-          <div class="fp-summary-row days">
-            <span class="k">Saldo giorni</span>
-            <span class="v ${pSColor} large">${pSign}${h2days(last.pS, contract.oreStd)}</span>
+          <div class="month-fp-divider"></div>
+          <div class="month-fp-col per">
+            <div class="month-fp-col-title">🕐 Permessi</div>
+            <div class="month-fp-row"><span class="k">Residuo A.P.</span><span class="v">${h2display(last.pAP)}</span></div>
+            <div class="month-fp-row"><span class="k">Maturato</span><span class="v c-teal">+${h2display(last.pMat)}</span></div>
+            <div class="month-fp-row"><span class="k">Goduto</span><span class="v c-red">${last.pG > 0 ? '−' : ''}${h2display(last.pG)}</span></div>
+            <div class="month-fp-row total"><span class="k">Saldo</span><span class="v ${pSColor} large">${pSign}${h2display(last.pS)}</span></div>
+            <div class="month-fp-row"><span class="k"></span><span class="v ${pSColor}">${pSign}${h2days(last.pS, contract.oreStd)} giorni</span></div>
           </div>
         </div>
       </div>`;
   } else {
     summaryHtml = `
       <div class="section-label">Saldo da busta paga</div>
-      <div class="fp-summary-card fer">
-        <div class="fp-summary-header">
-          <div class="fp-summary-title">☀️ Ferie</div>
-          <span class="fp-badge">BUSTA ${MI_SHORT[anchor.m - 1].toUpperCase()}</span>
+      <div class="month-card-fp current">
+        <div class="month-card-fp-header">
+          <span class="month-card-fp-title">Busta ${MI[anchor.m - 1]}</span>
         </div>
-        <div class="fp-summary-rows">
-          <div class="fp-summary-row days">
-            <span class="k">Saldo ore</span>
-            <span class="v c-amber large">${h2display(anchor.fer)}</span>
+        <div class="month-card-fp-body">
+          <div class="month-fp-col fer">
+            <div class="month-fp-col-title">☀️ Ferie</div>
+            <div class="month-fp-row total"><span class="k">Saldo</span><span class="v c-amber large">${h2display(anchor.fer)}</span></div>
           </div>
-        </div>
-      </div>
-      <div class="fp-summary-card per">
-        <div class="fp-summary-header">
-          <div class="fp-summary-title">🕐 Permessi</div>
-          <span class="fp-badge">BUSTA ${MI_SHORT[anchor.m - 1].toUpperCase()}</span>
-        </div>
-        <div class="fp-summary-rows">
-          <div class="fp-summary-row days">
-            <span class="k">Saldo ore</span>
-            <span class="v c-teal large">${h2display(anchor.perm)}</span>
+          <div class="month-fp-divider"></div>
+          <div class="month-fp-col per">
+            <div class="month-fp-col-title">🕐 Permessi</div>
+            <div class="month-fp-row total"><span class="k">Saldo</span><span class="v c-teal large">${h2display(anchor.perm)}</span></div>
           </div>
         </div>
       </div>`;

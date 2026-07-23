@@ -5,33 +5,35 @@
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────────── */
 :root {
-  /* Superfici */
-  --bg:          #f8f8f7;
-  --surface:     #ffffff;
-  --surface-2:   #f3f3f1;
-  --surface-3:   #ebebea;
-  --border:      #d8d8d5;
-  --border-soft: #e8e8e5;
+  /* Superfici — carta calda, non grigio da SaaS */
+  --bg:          #f6f4ee;
+  --surface:     #fffdf9;
+  --surface-2:   #efebe0;
+  --surface-3:   #e6e0d1;
+  --border:      #d9d2bd;
+  --border-soft: #e7e1d1;
 
-  /* Testo */
-  --text-primary:   #1a1a18;
-  --text-secondary: #6b6b68;
-  --text-tertiary:  #a0a09c;
+  /* Testo — inchiostro caldo */
+  --text-primary:   #1c1a13;
+  --text-secondary: #6e6a58;
+  --text-tertiary:  #a49d86;
 
-  /* Colori semantici — sobri su fondo chiaro */
-  --accent: #2d2d2b;   /* antracite — lavoro / primario */
-  --green:  #3a7d5a;   /* positivo / straordinari */
-  --red:    #c0443a;   /* negativo / debiti */
-  --amber:  #a07020;   /* ferie */
-  --teal:   #3a7a78;   /* permessi */
+  /* Colori semantici — desaturati, "d'archivio" */
+  --accent: #26241b;   /* inchiostro — lavoro / primario */
+  --green:  #4a6b4c;   /* muschio — positivo / straordinari */
+  --red:    #a3492f;   /* terracotta — negativo / debiti */
+  --amber:  #93701f;   /* ocra invecchiato — ferie */
+  --teal:   #3d6664;   /* ardesia — permessi */
 
   /* Tipografia */
   --font-sans:  'Geist', system-ui, sans-serif;
   --font-mono:  'Geist Mono', monospace;
   --font-serif: 'Instrument Serif', Georgia, serif;
 
+  /* Ombre — un solo livello dichiarato, riservato agli elementi sollevati */
+  --shadow-raised: 0 6px 20px -6px rgba(28, 26, 19, 0.16);
+
   /* Dimensioni app */
-  --nav-height:    68px;
   --header-height: 56px;
   --page-pad:      16px;
   --safe-bottom:   env(safe-area-inset-bottom, 0px);

@@ -55,7 +55,8 @@ async function init() {
 }
 
 function renderAll() {
-  const active = document.querySelector('.view.active')?.dataset?.view || 'mese';
+  const active = document.querySelector('.view.active')?.dataset?.view || 'home';
+  if (active === 'home')     renderHome();
   if (active === 'mese')     renderMese();
   if (active === 'anno')     renderAnno();
   if (active === 'ferie')    renderFerie();
@@ -65,14 +66,27 @@ function renderAll() {
 // ─── NAVIGAZIONE ──────────────────────────────────────────────
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel-menu-item').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  document.querySelector(`.nav-item[data-target="${name}"]`)?.classList.add('active');
+  document.querySelector(`.panel-menu-item[data-target="${name}"]`)?.classList.add('active');
 
+  if (name === 'home')     renderHome();
   if (name === 'mese')     renderMese();
   if (name === 'anno')     renderAnno();
   if (name === 'ferie')    renderFerie();
   if (name === 'settings') renderSettings();
+}
+
+// ─── PANNELLO "ALTRO" ─────────────────────────────────────────
+function openMorePanel() {
+  document.getElementById('more-panel-overlay').classList.add('open');
+}
+function closeMorePanel() {
+  document.getElementById('more-panel-overlay').classList.remove('open');
+}
+function navigateFromPanel(name) {
+  closeMorePanel();
+  showView(name);
 }
 
 function chMonth(d) {
@@ -87,7 +101,7 @@ function chMonth(d) {
 function goToday() {
   const n = new Date();
   cY = n.getFullYear(); cM = n.getMonth() + 1;
-  showView('mese');
+  showView('home');
 }
 
 // ─── QUICK SAVE ───────────────────────────────────────────────
@@ -215,7 +229,7 @@ function showToast(msg, type = '') {
 
 // ─── TASTIERA ─────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') { closeModal(); closeMorePanel(); }
 });
 
 // ─── AVVIO ────────────────────────────────────────────────────

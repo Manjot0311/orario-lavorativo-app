@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Timely">
-  <meta name="theme-color" content="#f5f4f0">
+  <meta name="theme-color" content="#f6f4ee">
   <title>Timely</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -23,7 +23,7 @@
     #splash-screen {
       position: fixed;
       inset: 0;
-      background: #f5f4f0;
+      background: #f6f4ee;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -39,7 +39,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       animation: splashIn 0.5s ease both;
     }
     @keyframes splashIn {
@@ -47,22 +47,23 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     .splash-logo {
-      width: 88px;
-      height: 88px;
-      border-radius: 22px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      width: 84px;
+      height: 84px;
+      border-radius: 20px;
+      box-shadow: 0 8px 28px -6px rgba(28, 26, 19, 0.22);
     }
     .splash-name {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: #1a1a1a;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-style: italic;
+      font-size: 2.1rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: #1c1a13;
     }
     .splash-tagline {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 0.85rem;
-      color: #888;
+      font-size: 0.8rem;
+      color: #9a9380;
       letter-spacing: 0.02em;
     }
   </style>
@@ -107,49 +108,91 @@
             <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/>
           </svg>
         </button>
+        <button class="icon-btn" id="nav-altro" onclick="openMorePanel()" title="Altre pagine">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
       </div>
     </header>
 
     <!-- ── VISTE ──────────────────────────────────────────── -->
     <main id="main">
-      <section id="view-mese"     class="view active" data-view="mese"></section>
+      <section id="view-home"     class="view active" data-view="home"></section>
+      <section id="view-mese"     class="view"        data-view="mese"></section>
       <section id="view-anno"     class="view"        data-view="anno"></section>
       <section id="view-ferie"    class="view"        data-view="ferie"></section>
       <section id="view-settings" class="view"        data-view="settings"></section>
     </main>
 
-    <!-- ── BOTTOM NAV ─────────────────────────────────────── -->
-    <nav id="bottom-nav">
-      <button class="nav-item active" data-target="mese" onclick="showView('mese')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span>Mese</span>
-      </button>
-      <button class="nav-item" data-target="anno" onclick="showView('anno')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-        <span>Anno</span>
-      </button>
-      <button class="nav-item" data-target="ferie" onclick="showView('ferie')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 17l4-8 4 4 4-6 4 10"/>
-          <path d="M3 20h18"/>
-        </svg>
-        <span>Ferie</span>
-      </button>
-      <button class="nav-item" data-target="settings" onclick="showView('settings')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        <span>Config</span>
-      </button>
-    </nav>
+    <!-- ── PANNELLO NAVIGAZIONE ──────────────────────────────── -->
+    <div class="modal-overlay" id="more-panel-overlay" onclick="if(event.target===this)closeMorePanel()">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Pagine</div>
+          </div>
+          <button class="icon-btn" onclick="closeMorePanel()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="panel-menu">
+          <button class="panel-menu-item" data-target="home" onclick="navigateFromPanel('home')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
+            </svg>
+            <div class="panel-menu-text">
+              <div class="panel-menu-title">Home</div>
+              <div class="panel-menu-sub">Inserimento rapido e sintesi</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="panel-menu-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="panel-menu-item" data-target="mese" onclick="navigateFromPanel('mese')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div class="panel-menu-text">
+              <div class="panel-menu-title">Mese</div>
+              <div class="panel-menu-sub">Recap completo, tutte le settimane</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="panel-menu-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="panel-menu-item" data-target="anno" onclick="navigateFromPanel('anno')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <div class="panel-menu-text">
+              <div class="panel-menu-title">Anno</div>
+              <div class="panel-menu-sub">Ore e straordinari per mese</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="panel-menu-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="panel-menu-item" data-target="ferie" onclick="navigateFromPanel('ferie')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l4-8 4 4 4-6 4 10"/><path d="M3 20h18"/>
+            </svg>
+            <div class="panel-menu-text">
+              <div class="panel-menu-title">Ferie & Permessi</div>
+              <div class="panel-menu-sub">Saldo attuale e storico</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="panel-menu-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="panel-menu-item" data-target="settings" onclick="navigateFromPanel('settings')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <div class="panel-menu-text">
+              <div class="panel-menu-title">Impostazioni</div>
+              <div class="panel-menu-sub">Contratto, dati, esportazione</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="panel-menu-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
 
 
   <!-- ── ONBOARDING ────────────────────────────────────────── -->
@@ -194,10 +237,10 @@
           <select id="m-tipo" class="field-select" onchange="onTipo()">
             <option value="">— non compilato —</option>
             <option value="Lavoro">Lavoro</option>
+            <option value="Fuori sede">Presente fuori sede</option>
             <option value="Ferie">Ferie</option>
             <option value="Festivo">Festivo</option>
             <option value="Malattia">Malattia</option>
-            <option value="Permesso">Permesso (giornata intera)</option>
           </select>
         </div>
         <div id="modal-work-fields">
@@ -267,6 +310,7 @@
 <script src="js/core/constants.js"></script>
 <script src="js/core/engine.js"></script>
 <script src="js/views/onboarding.js"></script>
+<script src="js/views/home.js"></script>
 <script src="js/views/mese.js"></script>
 <script src="js/views/anno.js"></script>
 <script src="js/views/ferie.js"></script>

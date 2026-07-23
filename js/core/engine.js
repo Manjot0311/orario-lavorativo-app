@@ -94,3 +94,108 @@ function calcFP(toY, toM, toToday = false) {
 
   return { fS, pS, months };
 }
+
+/**
+ * Sintesi di un mese: ore lavorate, saldo, assenze, saldo ferie/permessi.
+ * Condivisa fra Home e Mese per evitare di duplicare il calcolo.
+ */
+function getMonthStats(y, m, isNow) {
+  const cfg      = getConfig();
+  const contract = getUserContract();
+  const std      = t2m(cfg.std) || (contract.oreStd * 60);
+  const data     = loadData();
+
+  let ggL = 0, str = 0, deb = 0, ferD = 0, malD = 0, permD = 0;
+  for (let d = 1; d <= dim(y, m); d++) {
+    const r = data[dk(y, m, d)];
+    if (!r) continue;
+    const o = oreG(r), dl = dltG(r, std);
+    if (r.t === 'Lavoro' && o != null) {
+      ggL++;
+      if (dl > 0) str += dl; else if (dl < 0) deb += dl;
+    }
+    if (r.t === 'Ferie' || r.t === 'Permesso') ferD++;
+    if (r.t === 'Malattia') malD++;
+  }
+  const totO  = ggL * contract.oreStd * 60;
+  const saldo = str + deb;
+
+  const anchor = getLastAnchor(y, m);
+  let fS = null, pS = null, hasFP = false;
+  if (anchor) {
+    const fp  = calcFP(y, m, isNow);
+    const cur = fp.months[fp.months.length - 1];
+    if (cur) { fS = cur.fS; pS = cur.pS; hasFP = true; }
+    else if (fp.months.length === 0) { fS = anchor.fer; pS = anchor.perm; hasFP = true; }
+  }
+
+  return { totO, ggL, saldo, str, deb, ferD, malD, permD, fS, pS, hasFP, hasAnchor: !!anchor, std, contract };
+}
+
+/**
+ * HTML di una singola riga-giorno del registro.
+ * Usata sia dal registro mensile (Mese) sia dal recap settimanale (Home).
+ * opts.dimOtherMonth: se true, i giorni fuori mese sono attenuati e cliccarli cambia mese.
+ */
+function renderDayRow({ date, y, m, d, om }, data, std, todayKey, opts = {}) {
+  const dimOtherMonth = opts.dimOtherMonth ?? true;
+  const we      = isWE(y, m, d);
+  const r       = data[dk(y, m, d)];
+  const o       = oreG(r);
+  const dl      = dltG(r, std);
+  const isToday = dk(y, m, d) === todayKey;
+
+  const isAutoHoliday = !we && r?._auto === true && r?.t === 'Festivo';
+  const tipo = we ? 'Weekend' : (r?.t || '');
+
+  const badgeMap = { Lavoro:'badge-lavoro', 'Fuori sede':'badge-lavoro', Ferie:'badge-ferie', Festivo:'badge-festivo',
+                     Malattia:'badge-malattia', Permesso:'badge-permesso' };
+  const badgeCls = badgeMap[tipo] || '';
+
+  const rowClass = [
+    'day-row',
+    we                                   ? 'weekend'        : '',
+    isToday                              ? 'today'          : '',
+    (om && dimOtherMonth)                ? 'other-month'    : '',
+    isAutoHoliday                        ? 'auto-holiday'   : '',
+    r?.t === 'Ferie'      ? 'ferie-row'    : '',
+    r?.t === 'Permesso'   ? 'permesso-row' : '',
+    r?.t === 'Fuori sede' ? 'fuori-row'    : ''
+  ].filter(Boolean).join(' ');
+
+  const dateLabel = (om && dimOtherMonth)
+    ? `<span>${d} <span style="color:var(--text-tertiary)">${MI_SHORT[m - 1]}</span></span>`
+    : `<strong>${d}</strong> <span style="color:var(--text-tertiary);font-size:.7rem">${DI_SHORT[date.getDay()]}</span>`;
+
+  const timesStr = r?.e ? `${r.e}→${r.u || '?'}` : '';
+  const noteStr  = isAutoHoliday ? (r.n || '') : (r?.n || '');
+
+  let absStr = '';
+  if (r?.po) absStr += `<span class="c-teal">${parseFloat(r.po).toFixed(2)}h P</span> `;
+  if (r?.fo) absStr += `<span class="c-amber">${parseFloat(r.fo).toFixed(2)}h F</span>`;
+
+  const deltaClass = dl == null ? '' : dl > 0 ? 'pos' : dl < 0 ? 'neg' : 'zer';
+  const deltaHtml  = dl != null ? `<div class="day-delta ${deltaClass}">${m2t(dl, true)}</div>` : '';
+
+  const clickAttr = we ? ''
+    : (om && dimOtherMonth) ? `onclick="cY=${y};cM=${m};showView('mese')"`
+                             : `onclick="openModal('${dk(y, m, d)}')"`;
+
+  const autoIcon = isAutoHoliday
+    ? `<span class="auto-holiday-icon" title="Festivo nazionale automatico">🇮🇹</span>`
+    : '';
+
+  return `
+    <div class="${rowClass}" ${clickAttr}>
+      <div class="day-date">${dateLabel}</div>
+      <div>${tipo && !we ? `<span class="badge ${badgeCls}">${tipo}</span>${autoIcon}` : ''}</div>
+      <div class="day-center">
+        ${timesStr ? `<div class="day-times">${timesStr}${absStr ? ' · '+absStr : ''}</div>` : (absStr ? `<div class="day-times">${absStr}</div>` : '')}
+        ${noteStr  ? `<div class="day-note">${noteStr}</div>` : ''}
+      </div>
+      <div class="day-right">
+        ${o != null ? `<div class="day-hours">${m2t(o)}</div>` : ''}
+        ${deltaHtml}
+      </div>
+    </div>`;
+}

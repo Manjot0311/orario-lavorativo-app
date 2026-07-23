@@ -83,7 +83,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 8px);
+  padding-bottom: calc(var(--safe-bottom) + 20px);
 }
 
 /* ─── VIEWS ──────────────────────────────────────────────────── */
@@ -94,50 +94,4 @@
 }
 .view.active {
   display: block;
-}
-
-/* ─── BOTTOM NAV ─────────────────────────────────────────────── */
-#bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 640px;
-  height: calc(var(--nav-height) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  background: var(--surface);
-  border-top: 1px solid var(--border-soft);
-  display: flex;
-  align-items: flex-start;
-  padding-top: 8px;
-  z-index: 50;
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 4px;
-  color: var(--text-tertiary);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: color 0.15s;
-  border-radius: 10px;
-  margin: 0 4px;
-}
-
-.nav-item svg {
-  transition: stroke 0.15s;
-}
-
-.nav-item.active {
-  color: var(--text-primary);
-}
-
-.nav-item.active svg {
-  stroke: var(--accent);
 }

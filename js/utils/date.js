@@ -32,6 +32,22 @@ function isoWk(date) {
 }
 
 /**
+ * I 7 giorni (lun→dom) della settimana che contiene `now`.
+ * Usato dalla Home per il recap della settimana corrente.
+ */
+function currentWeekDays(now) {
+  const dow = now.getDay() || 7; // 1=lun … 7=dom
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (dow - 1));
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(mon);
+    day.setDate(mon.getDate() + i);
+    days.push({ date: day, y: day.getFullYear(), m: day.getMonth() + 1, d: day.getDate(), om: false });
+  }
+  return days;
+}
+/**
  * Restituisce tutte le settimane ISO del mese,
  * ognuna con i 7 giorni completi (lun→dom).
  * I giorni fuori mese hanno om=true.

@@ -11,19 +11,22 @@
 .quick-bar {
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  border-left: 3px solid var(--accent);
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-raised);
 }
 
 .quick-bar-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-style: italic;
+  letter-spacing: 0;
   margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .quick-inputs {
@@ -203,7 +206,7 @@
 }
 
 .week-header.current {
-  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
 }
 
 .week-num {
@@ -444,78 +447,6 @@
    ══════════════════════════════════════════════════════════════ */
 
 /* ─── Card saldo attuale (verticale, full-width) ─────────────── */
-.fp-summary-card {
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  width: 100%;
-  box-sizing: border-box;
-}
-.fp-summary-card.fer { border-left: 3px solid var(--amber); }
-.fp-summary-card.per { border-left: 3px solid var(--teal); }
-
-.fp-summary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.fp-summary-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.fp-summary-card.fer .fp-summary-title { color: var(--amber); }
-.fp-summary-card.per .fp-summary-title { color: var(--teal); }
-
-/* ─── Righe dettaglio dentro la card saldo ───────────────────── */
-.fp-summary-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.fp-summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--border-soft);
-}
-.fp-summary-row:last-child { border-bottom: none; }
-
-.fp-summary-row.total {
-  border-top: 1px solid var(--border);
-  border-bottom: none;
-  margin-top: 4px;
-  padding-top: 8px;
-}
-
-.fp-summary-row.days { padding-top: 4px; }
-
-.fp-summary-row .k {
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-}
-
-.fp-summary-row .v {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 500;
-}
-
-.fp-summary-row .v.large {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
 /* ─── Storico mensile: lista verticale ───────────────────────── */
 .month-list-fp {
   display: flex;
@@ -528,14 +459,12 @@
   border: 1px solid var(--border-soft);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   width: 100%;
   box-sizing: border-box;
 }
 
 .month-card-fp.current {
   border-color: var(--accent);
-  border-left: 3px solid var(--accent);
 }
 
 .month-card-fp-header {
@@ -611,6 +540,11 @@
   margin-left: 3px;
 }
 
+.month-fp-row .v.large {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
 
 /* ══════════════════════════════════════════════════════════════
    VISTA SETTINGS
@@ -634,6 +568,10 @@
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   overflow: hidden;
+}
+
+.settings-card-danger {
+  border-color: color-mix(in srgb, var(--red) 22%, var(--border-soft));
 }
 
 .settings-row {

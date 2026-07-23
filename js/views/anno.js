@@ -47,58 +47,6 @@ function renderAnno() {
       </div>
     </div>`;
 
-  // ── FP annuale ─────────────────────────────────────────────
-  const endMo = isCY ? now.getMonth() + 1 : 12;
-  const fp    = calcFP(vY, endMo, isCY);
-  const last  = fp.months[fp.months.length - 1];
-
-  let annualFpHtml = '';
-  if (last) {
-    const lbl    = isCY ? 'ad oggi' : 'fine anno';
-    const ferMat = fp.months.reduce((a, x) => a + x.fMat, 0);
-    const ferGod = fp.months.reduce((a, x) => a + x.fG,   0);
-    const perMat = fp.months.reduce((a, x) => a + x.pMat, 0);
-    const perGod = fp.months.reduce((a, x) => a + x.pG,   0);
-
-    annualFpHtml = `
-      <div class="annual-fp">
-        <div class="annual-fp-card fer">
-          <h4>Ferie — ${lbl}</h4>
-          <div class="annual-fp-row">
-            <span class="k">Maturato</span>
-            <span class="v c-amber">${hRound(ferMat).toFixed(2)}h &nbsp;(${(ferMat / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${hRound(ferGod).toFixed(2)}h &nbsp;(${(ferGod / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Saldo</span>
-            <span class="v ${last.fS >= 0 ? 'c-amber' : 'c-red'}">
-              ${hRound(last.fS).toFixed(2)}h &nbsp;(${(last.fS / ORE_GIORNATA).toFixed(1)}g)
-            </span>
-          </div>
-        </div>
-        <div class="annual-fp-card per">
-          <h4>Permessi — ${lbl}</h4>
-          <div class="annual-fp-row">
-            <span class="k">Maturato</span>
-            <span class="v c-teal">${hRound(perMat).toFixed(2)}h &nbsp;(${(perMat / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Goduto</span>
-            <span class="v c-red">${hRound(perGod).toFixed(2)}h &nbsp;(${(perGod / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="annual-fp-row">
-            <span class="k">Saldo</span>
-            <span class="v ${last.pS >= 0 ? 'c-teal' : 'c-red'}">
-              ${hRound(last.pS).toFixed(2)}h &nbsp;(${(last.pS / ORE_GIORNATA).toFixed(1)}g)
-            </span>
-          </div>
-        </div>
-      </div>`;
-  }
-
   // ── Griglia mesi ───────────────────────────────────────────
   const monthCards = [];
   for (let mo = 1; mo <= 12; mo++) {
@@ -115,24 +63,6 @@ function renderAnno() {
     const barColor = pct >= 100 ? 'var(--green)' : pct >= 80 ? 'var(--amber)' : 'var(--red)';
     const mSaldo   = s + dv;
 
-    // FP saldo per il mese
-    let fpRow = '';
-    if (vY > 2026 || (vY === 2026 && mo >= 2)) {
-      const fpM = calcFP(vY, mo, false);
-      const lmx = fpM.months[fpM.months.length - 1];
-      if (lmx) {
-        fpRow = `
-          <div class="month-row">
-            <span class="k">Ferie saldo</span>
-            <span class="v ${lmx.fS >= 0 ? 'c-amber' : 'c-red'}">${hRound(lmx.fS).toFixed(1)}h (${(lmx.fS / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>
-          <div class="month-row">
-            <span class="k">Perm. saldo</span>
-            <span class="v ${lmx.pS >= 0 ? 'c-teal' : 'c-red'}">${hRound(lmx.pS).toFixed(1)}h (${(lmx.pS / ORE_GIORNATA).toFixed(1)}g)</span>
-          </div>`;
-      }
-    }
-
     monthCards.push(`
       <div class="month-card" onclick="cM=${mo};cY=${vY};showView('mese')">
         <h4>${MI[mo - 1]} <span>${g} gg lav.</span></h4>
@@ -140,7 +70,6 @@ function renderAnno() {
         <div class="month-row"><span class="k">Saldo ore</span><span class="v ${mSaldo >= 0 ? 'c-green' : 'c-red'}">${m2t(mSaldo, true)}</span></div>
         ${mFerD  > 0 ? `<div class="month-row"><span class="k">Ferie</span><span class="v c-amber">${mFerD} gg</span></div>` : ''}
         ${mPermD > 0 ? `<div class="month-row"><span class="k">Permessi</span><span class="v c-teal">${mPermD} gg</span></div>` : ''}
-        ${fpRow}
         <div class="month-bar-track">
           <div class="month-bar-fill" style="width:${pct}%;background:${barColor}"></div>
         </div>
@@ -151,7 +80,6 @@ function renderAnno() {
   el.innerHTML = `
     <div class="year-selector">${yearBtns}</div>
     ${statCards}
-    ${annualFpHtml}
     <div class="section-label">Dettaglio mensile — tocca per aprire</div>
     <div class="month-grid">${monthCards.join('')}</div>`;
 }

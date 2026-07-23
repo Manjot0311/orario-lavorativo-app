@@ -77,7 +77,7 @@ function renderSettings() {
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-title">Esporta dati</div>
+      <div class="settings-section-title">Dati</div>
       <div class="io-grid">
         <button class="btn btn-ghost btn-block" onclick="exportXLSX()">
           ${Icons.download()} Esporta Excel
@@ -85,21 +85,17 @@ function renderSettings() {
         <button class="btn btn-ghost btn-block" onclick="exportCSV()">
           ${Icons.download()} Esporta CSV
         </button>
+        <label for="imp-file" class="btn btn-ghost btn-block" style="cursor:pointer;grid-column:1/-1">
+          ${Icons.upload()} Importa da Excel
+        </label>
+        <input type="file" id="imp-file" style="display:none"
+          accept=".xlsx,.xls" onchange="importXLSX(event)">
       </div>
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-title">Importa dati</div>
-      <label for="imp-file" class="btn btn-ghost btn-block" style="cursor:pointer">
-        ${Icons.upload()} Importa da Excel
-      </label>
-      <input type="file" id="imp-file" style="display:none"
-        accept=".xlsx,.xls" onchange="importXLSX(event)">
-    </div>
-
-    <div class="settings-section">
       <div class="settings-section-title">Zona pericolo</div>
-      <div class="settings-card">
+      <div class="settings-card settings-card-danger">
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="label">Disattiva dispositivo</div>
