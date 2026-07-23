@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════
+   layout.css — Shell, header, navigazione, viste
+   Modifica qui: struttura pagina, posizione navbar, altezze
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── APP SHELL ──────────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────── */
+#header {
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--page-pad);
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  /* Evita sovrapposizione testo su safe area iPhone */
+  box-sizing: content-box;
+  height: var(--header-height);
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.app-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-right {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ─── ICON BUTTON ────────────────────────────────────────────── */
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+/* ─── MAIN CONTENT ───────────────────────────────────────────── */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--safe-bottom) + 20px);
+}
+
+/* ─── VIEWS ──────────────────────────────────────────────────── */
+.view {
+  display: none;
+  padding: var(--page-pad);
+  animation: fadeIn 0.18s ease;
+}
+.view.active {
+  display: block;
+}
