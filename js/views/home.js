@@ -46,7 +46,7 @@ function renderHome() {
     <div class="stat-row">
       <div class="stat-card">
         <div class="stat-label">Ore lavorate</div>
-        <div class="stat-value c-blue">${m2t(stats.totO)}</div>
+        <div class="stat-value c-blue">${mInt(stats.totO)}</div>
         <div class="stat-sub">${stats.ggL} giorni</div>
       </div>
       <div class="stat-card">

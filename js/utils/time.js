@@ -42,6 +42,13 @@ function h2days(hours, hoursPerDay = 8) {
   return s;
 }
 
+/** Minuti → ore intere, es. "168h" (per totali aggregati tipo "ore lavorate") */
+function mInt(m) {
+  if (m == null || isNaN(m)) return '—';
+  const neg = m < 0, a = Math.abs(m);
+  return (neg ? '−' : '') + Math.round(a / 60) + 'h';
+}
+
 /** Arrotonda ore a 2 decimali */
 function hRound(h) {
   return Math.round(h * 100) / 100;

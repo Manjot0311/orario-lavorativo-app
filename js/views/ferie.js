@@ -1,6 +1,7 @@
 /* js/views/ferie.js — Vista ferie & permessi
-   Saldo attuale (ferie+permessi in un'unica card a due colonne,
-   stesso linguaggio visivo dello storico sotto) + storico mensile
+   Saldo attuale (ferie+permessi in un'unica card a due colonne) in
+   evidenza in cima; storico mensile a righe compatte espandibili
+   al tocco, per non dover scorrere card intere per ogni mese.
    ═══════════════════════════════════════════════════════════════ */
 
 function renderFerie() {
@@ -93,25 +94,30 @@ function renderFerie() {
       </div>`;
   }
 
-  // ── Storico mensile ────────────────────────────────────────
+  // ── Storico mensile — righe compatte, espandibili al tocco ──
+  // Il mese corrente è già la card "Saldo attuale" sopra: qui va
+  // mostrato solo il passato, per non duplicare la stessa info.
+  const pastMonths = fp.months.slice(0, -1);
+
   let storicoHtml = '';
-  if (fp.months.length > 0) {
-    const rows = [...fp.months].reverse().map(mo => {
-      const isPartial = mo.partial;
-      const lbl       = isPartial
-        ? `ad oggi ${now.getDate()} ${MI_SHORT[mo.m - 1]}`
-        : MI_SHORT[mo.m - 1];
-      const fSColor   = mo.fS >= 0 ? 'c-amber' : 'c-red';
-      const pSColor   = mo.pS >= 0 ? 'c-teal'  : 'c-red';
-      const fSign     = mo.fS >= 0 ? '+' : '';
-      const pSign     = mo.pS >= 0 ? '+' : '';
+  if (pastMonths.length > 0) {
+    const rows = [...pastMonths].reverse().map((mo, idx) => {
+      const id      = `fp-hist-${mo.y}-${mo.m}`;
+      const fSColor = mo.fS >= 0 ? 'c-amber' : 'c-red';
+      const pSColor = mo.pS >= 0 ? 'c-teal'  : 'c-red';
+      const fSign   = mo.fS >= 0 ? '+' : '';
+      const pSign   = mo.pS >= 0 ? '+' : '';
 
       return `
-        <div class="month-card-fp${isPartial ? ' current' : ''}">
-          <div class="month-card-fp-header">
+        <div class="month-card-fp fp-collapsible" id="${id}">
+          <button class="month-card-fp-summary" onclick="toggleFpHistory('${id}')">
             <span class="month-card-fp-title">${MI[mo.m - 1]} ${mo.y}</span>
-            <span class="fp-badge">${lbl}</span>
-          </div>
+            <span class="fp-summary-chips">
+              <span class="fp-chip ${fSColor}">${fSign}${h2display(mo.fS)}</span>
+              <span class="fp-chip ${pSColor}">${pSign}${h2display(mo.pS)}</span>
+            </span>
+            <svg class="fp-hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
           <div class="month-card-fp-body">
             <div class="month-fp-col fer">
               <div class="month-fp-col-title">☀️ Ferie</div>
@@ -149,7 +155,7 @@ function renderFerie() {
     }).join('');
 
     storicoHtml = `
-      <div class="section-label">Storico mensile</div>
+      <div class="section-label">Storico mensile — tocca un mese per il dettaglio</div>
       <div class="month-list-fp">${rows}</div>`;
   }
 
@@ -158,4 +164,6 @@ function renderFerie() {
     ${storicoHtml}`;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
+function toggleFpHistory(id) {
+  document.getElementById(id)?.classList.toggle('expanded');
+}

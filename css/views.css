@@ -392,19 +392,6 @@
   text-align: right;
 }
 
-.month-bar-track {
-  height: 3px;
-  background: var(--border);
-  border-radius: 2px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-.month-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-
 .annual-fp {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -481,6 +468,47 @@
   font-weight: 600;
   color: var(--text-primary);
 }
+
+/* ─── Righe storico compatte, espandibili al tocco ───────────── */
+.month-card-fp-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.fp-summary-chips {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.fp-chip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.fp-hist-chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform 0.18s ease;
+}
+
+.fp-collapsible .month-card-fp-body { display: none; }
+.fp-collapsible.expanded .month-card-fp-body {
+  display: grid;
+  border-top: 1px solid var(--border-soft);
+}
+.fp-collapsible.expanded .fp-hist-chevron { transform: rotate(90deg); color: var(--accent); }
+.fp-collapsible.expanded .month-card-fp-summary { background: var(--surface-2); }
 
 /* ─── Body card mensile: due colonne affiancate ──────────────── */
 .month-card-fp-body {
@@ -583,6 +611,23 @@
   gap: 12px;
 }
 .settings-row:last-child { border-bottom: none; }
+
+.settings-row-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.settings-row-info {
+  flex: 1;
+  min-width: 0;
+}
 
 .settings-row-info .label {
   font-size: 0.88rem;
