@@ -41,6 +41,13 @@ function _obStep1(body, fromSettings) {
     <div class="ob-fields">
 
       <div class="field-group">
+        <label class="field-label">Come ti chiami?</label>
+        <input type="text" id="ob-nome" class="field-input" maxlength="40"
+          value="${cfg.nome || ''}" placeholder="Es. Mario">
+        <div class="field-hint">Solo per personalizzare l'app — resta sul tuo dispositivo</div>
+      </div>
+
+      <div class="field-group">
         <label class="field-label">Ore giornaliere contrattuali</label>
         <input type="number" id="ob-ore-std" class="field-input" step="0.5" min="1" max="12"
           value="${cfg.oreStd || 8}" placeholder="8">
@@ -91,6 +98,7 @@ function _obStep1(body, fromSettings) {
 }
 
 function _obNext1(fromSettings) {
+  const nome         = document.getElementById('ob-nome').value.trim();
   const oreStd       = parseFloat(document.getElementById('ob-ore-std').value);
   const ferMese      = parseFloat(document.getElementById('ob-fer-mat').value);
   const permMese     = parseFloat(document.getElementById('ob-perm-mat').value);
@@ -104,6 +112,7 @@ function _obNext1(fromSettings) {
   if (isNaN(pausaPranzoMin) || pausaPranzoMin < 0) return _obError('Inserisci una pausa pranzo valida (in minuti)');
 
   const profile = loadUserProfile();
+  profile.nome           = nome;
   profile.oreStd        = oreStd;
   profile.ferMese       = ferMese;
   profile.permMese      = permMese;
@@ -333,4 +342,34 @@ function openBustaUpdate() {
 
 function dismissBustaReminder() {
   document.getElementById('busta-reminder')?.classList.remove('visible');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Prompt nome — per chi usa già l'app da prima che venisse chiesto.
+   Appare una sola volta all'avvio, non blocca l'uso dell'app.
+   ═══════════════════════════════════════════════════════════════ */
+function showNamePrompt() {
+  document.getElementById('name-prompt-overlay')?.classList.add('open');
+  setTimeout(() => document.getElementById('name-prompt-input')?.focus(), 200);
+}
+
+function closeNamePrompt() {
+  document.getElementById('name-prompt-overlay')?.classList.remove('open');
+}
+
+function saveNamePrompt() {
+  const val = document.getElementById('name-prompt-input')?.value.trim() || '';
+  const profile = loadUserProfile();
+  profile.nome = val;
+  saveUserProfile(profile);
+  closeNamePrompt();
+  renderAll();
+}
+
+function skipNamePrompt() {
+  // Salva stringa vuota (non undefined) così il prompt non ricompare
+  const profile = loadUserProfile();
+  profile.nome = '';
+  saveUserProfile(profile);
+  closeNamePrompt();
 }

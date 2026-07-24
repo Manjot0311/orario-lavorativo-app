@@ -204,6 +204,24 @@
     </div>
   </div>
 
+  <!-- ── PROMPT NOME (utenti già esistenti) ────────────────── -->
+  <div id="name-prompt-overlay" class="modal-overlay" onclick="if(event.target===this)skipNamePrompt()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="name-prompt-body">
+        <div class="ob-icon">👋</div>
+        <div class="ob-title">Come ti chiami?</div>
+        <div class="ob-desc">Solo per personalizzare l'app — resta sul tuo dispositivo.</div>
+        <input type="text" id="name-prompt-input" class="field-input" maxlength="40" placeholder="Es. Mario"
+          onkeydown="if(event.key==='Enter')saveNamePrompt()">
+        <div class="ob-actions">
+          <button class="btn btn-primary btn-block" onclick="saveNamePrompt()">Salva</button>
+          <button class="btn btn-ghost btn-block" onclick="skipNamePrompt()">Non ora</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── BUSTA REMINDER ────────────────────────────────────── -->
   <div id="busta-reminder">
     <div class="br-text"></div>

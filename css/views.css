@@ -589,30 +589,91 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 8px;
+  padding-left: 4px;
 }
 
-.settings-card {
+/* ─── Card profilo — hero in cima, solo identità ──────────────── */
+.profile-header {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.profile-edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.profile-edit-btn:hover { background: var(--surface-2); }
+
+.profile-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.profile-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+}
+
+/* ─── Valore di sola lettura in fondo a una riga di lista ─────── */
+.ios-row-value {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ─── Liste raggruppate — stile iOS: separatori a incasso,
+   icona in chip colorato, niente pulsanti pieni sulle righe ───── */
+.ios-list {
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   overflow: hidden;
 }
 
-.settings-card-danger {
-  border-color: color-mix(in srgb, var(--red) 22%, var(--border-soft));
-}
-
-.settings-row {
+.ios-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px;
-  border-bottom: 1px solid var(--border-soft);
   gap: 12px;
+  padding: 11px 14px;
+  width: 100%;
+  text-align: left;
+  position: relative;
 }
-.settings-row:last-child { border-bottom: none; }
+.ios-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 54px;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--border-soft);
+}
 
-.settings-row-icon {
+.ios-row-tap:active { background: var(--surface-2); }
+
+.ios-row-icon {
   flex-shrink: 0;
   width: 30px;
   height: 30px;
@@ -620,31 +681,42 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: var(--surface-2);
-  color: var(--text-secondary);
+  color: #fff;
 }
+.chip-accent { background: var(--accent); }
+.chip-amber  { background: var(--amber); }
+.chip-teal   { background: var(--teal); }
+.chip-green  { background: var(--green); }
+.chip-red    { background: var(--red); }
 
-.settings-row-info {
+.ios-row-info {
   flex: 1;
   min-width: 0;
 }
 
-.settings-row-info .label {
+.ios-row-info .label {
   font-size: 0.88rem;
   font-weight: 500;
+  color: var(--text-primary);
 }
+.ios-row-info .label.link-label { color: var(--accent); font-weight: 500; }
+.ios-row-info .label.danger-label { color: var(--red); font-weight: 500; }
 
-.settings-row-info .desc {
+.ios-row-info .desc {
   font-size: 0.73rem;
   color: var(--text-secondary);
   margin-top: 2px;
 }
 
-.io-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.ios-row-action {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 5px 10px;
+  border-radius: 6px;
 }
+.ios-row-action:hover { background: var(--surface-2); }
 
 .settings-footer {
   text-align: center;
@@ -755,6 +827,14 @@
 .ob-desc {
   font-size: 0.84rem; color: var(--text-secondary);
   text-align: center; margin-bottom: 20px; line-height: 1.6;
+}
+
+/* ─── Prompt nome (utenti esistenti) ─────────────────────────── */
+.name-prompt-body {
+  padding: 4px 20px calc(20px + var(--safe-bottom));
+}
+.name-prompt-body .field-input {
+  margin-bottom: 4px;
 }
 .ob-fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .ob-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

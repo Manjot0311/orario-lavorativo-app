@@ -50,6 +50,12 @@ async function init() {
     setTimeout(() => showToast(`Dati migrati — tutto ok ✓`, 'success'), 600);
   }
 
+  // Utenti già esistenti (onboarding fatto prima che si chiedesse il nome)
+  const profile = loadUserProfile();
+  if (profile.nome === undefined) {
+    setTimeout(showNamePrompt, 900);
+  }
+
   // Controlla reminder busta paga
   setTimeout(checkBustaReminder, 800);
 }
